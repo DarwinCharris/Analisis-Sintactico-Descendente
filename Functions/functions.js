@@ -1,3 +1,31 @@
+class Produccion {
+    constructor(NTerm, productions) {
+        this.NTerm = NTerm;            // Atributo NTerm
+        this.productions = productions; // Lista de producciones
+    }
+}
+
+class Gramatica {
+    constructor() {
+        this.rightPart = []; // Inicializa la lista de producciones
+    }
+
+    add(tag, production) {
+        // Busca si el tag ya existe como NTerm
+        const existingProduccion = this.rightPart.find(prod => prod.NTerm === tag);
+
+        if (!existingProduccion) {
+            // Si no existe, crea un nuevo objeto Produccion y lo añade a la lista
+            this.rightPart.push(new Produccion(tag, [production]));
+        } else {
+            // Si existe, agrega la producción a la lista existente
+            if (!existingProduccion.productions.includes(production)){
+                existingProduccion.productions.push(production);
+            }
+            
+        }
+    }
+}
 function validate(content){
     //content is the txt content (String)
     // if content is ''
@@ -38,6 +66,7 @@ function findTerminal(str) {
 function components(content){
     let Terminals=[]
     let NoTerminals=[]
+    let gram= new Gramatica()
     //Remove blanck spaces
     content= content.replace(' ', '');
     // split the content
@@ -50,6 +79,7 @@ function components(content){
         //Right part
         let right = element.substring(3)
         let i =0
+        gram.add(element[0], right)
         while(i<right.length){
             let chart = right[i]
             if((chart>= 'A' && chart <= 'Z')){
@@ -69,11 +99,43 @@ function components(content){
             i+=1
         }
     }
-    return [Terminals, NoTerminals]
+    return [Terminals, NoTerminals, gram]
 }
-let str = 'A->BidD|&\r\nC->A'
+function leftRecursion(gram){
+    let newgram = new Gramatica()
+    for (let element of gram.rightPart){
+        let X=[]
+        let Y=[]
+        for (let production of element.productions){
+            if(production[0]===element.NTerm){
+                X.push(production.substring(1))
+            }else{
+                Y.push(production)
+            }
+        }
+        if(X.length > 0){
+            for(let yi of Y){
+                let left = element.NTerm
+                let right = yi+element.NTerm+"'"
+                newgram.add(left, right)
+            }
+            for(let xi of X){
+                newgram.add(`${element.NTerm}'`, `${xi}${element.NTerm}'`)
+            }
+            newgram.add(`${element.NTerm}'`, "&")
+        }else{
+            newgram.rightPart.push(element)
+        }
+    }
+    return newgram
+}
+let str = 'E->E+T\r\nE->E-T\r\nE->T\r\nT->T*F\r\nT->T/F\r\nT->F\r\nF->(E)\r\nF->id'
 console.log(str)
 console.log(validate(str))
-let[terminales, noterminales] = components(str)
+let[terminales, noterminales, gramatica] = components(str)
 console.log(noterminales)
 console.log(terminales)
+let nueva = leftRecursion(gramatica)
+for (let elemento of nueva.rightPart){
+    console.log(elemento)
+}
