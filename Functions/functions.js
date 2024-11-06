@@ -63,6 +63,18 @@ function findTerminal(str) {
 
     return result;
 }
+function splitString(str) {
+    const result = [];
+    for (let i = 0; i < str.length; i++) {
+        if (str[i] === 'i' && str[i + 1] === 'd') {
+            result.push('id');
+            i++; // Saltamos el siguiente carácter ('d') ya que fue incluido como "id"
+        } else {
+            result.push(str[i]);
+        }
+    }
+    return result;
+}
 function components(content){
     let Terminals=[]
     let NoTerminals=[]
@@ -89,8 +101,11 @@ function components(content){
             }else{
                 let sub = right.substring(i)
                 let terminal = findTerminal(sub)
-                if (terminal !== '' && !Terminals.includes(terminal)){
-                    Terminals.push(terminal)
+                let terminals = splitString(terminal)
+                for (let ter of terminals){
+                    if(ter !== '' && !Terminals.includes(ter)){
+                        Terminals.push(ter)
+                    }
                 }
                 if (terminal.length !=0){
                     i = i+ terminal.length-1
@@ -221,10 +236,15 @@ function newcomponents(gram){
                     }
                 }else{
                     let termi =findTerminal(prod.substring(i))
-                    if(!terminals.includes(termi) && termi !='&' ){
-                        terminals.push(termi)
+                    let lterminals = splitString(termi)
+                    for (let ter of lterminals){
+                        if(ter !== '&' && !terminals.includes(ter)){
+                            terminals.push(ter)
+                        }
                     }
-                    i = i+termi.length
+                    if (termi.length !=0){
+                        i = i+ termi.length
+                    }
                 }
             }
         }
@@ -232,7 +252,7 @@ function newcomponents(gram){
     return [terminals, noTerminals]
 }
 
-let str = 'S->Ab\r\nS->B\r\nA->Aa\r\nA->c\r\nA->d\r\nB->a\r\nB->aB'
+let str = 'S->Sid\r\nS->B\r\nB->(id)i'
 //console.log(str)
 //console.log(validate(str))
 let[terminales, noterminales, gramatica] = components(str)
