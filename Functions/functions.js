@@ -252,6 +252,84 @@ function newcomponents(gram){
     return [terminals, noTerminals]
 }
 
+
+
+
+function calculateFirst(rightPart) {
+    let firstSets = {};
+
+    // Inicializar el conjunto "primero" para cada no terminal
+    for (let produccion of rightPart) {
+        firstSets[produccion.NTerm] = new Set();
+    }
+
+    // Función para calcular el primero de una cadena específica
+    function firstOfString(str) {
+        let firstSet = new Set();
+        let canBeEmpty = true;
+
+        for (let i = 0; i < str.length; i++) {
+            canBeEmpty = false;
+            
+            // Detectar "id" como un terminal completo al inicio de la cadena
+            if (str.slice(i, i + 2) === "id") {
+                firstSet.add("id");
+                i++; // Avanza el índice para saltar el carácter "d"
+                canBeEmpty = false;
+                break;
+            } else if (!(str[i] >= 'A' && str[i] <= 'Z')) { // Es un terminal de un solo carácter
+                firstSet.add(str[i]);
+                canBeEmpty = false;
+                break;
+            } else { // Es un no terminal
+                for (let f of firstSets[str[i]]) {
+                    if (f !== '&') {
+                        firstSet.add(f);
+                    } else {
+                        canBeEmpty = true;
+                    }
+                }   /* A -> B 
+                      B -> epsilon */
+                if (!canBeEmpty) {
+                    break;
+                }
+            }
+        }
+
+        if (canBeEmpty) {
+            firstSet.add('&');
+        }
+        return firstSet;
+    }
+
+    // Calcular el conjunto primero de cada no terminal
+    let changed = true;
+    while (changed) {
+        changed = false;
+        for (let produccion of rightPart) {
+            let nterm = produccion.NTerm;
+            for (let production of produccion.productions) {
+                let beforeSize = firstSets[nterm].size;
+                let firstSetForProduction = firstOfString(production);
+
+                for (let f of firstSetForProduction) {
+                    firstSets[nterm].add(f);
+                }
+
+                if (firstSets[nterm].size > beforeSize) {
+                    changed = true;
+                }
+            }
+        }
+    }
+
+    return firstSets;
+}
+
+
+
+
+
 let str = 'S->Sid\r\nS->B\r\nB->(id)i'
 //console.log(str)
 //console.log(validate(str))
@@ -268,6 +346,5 @@ let [terminales2, noterminales2 ]= newcomponents(n2)
 console.log(terminales2)
 console.log(noterminales2)
 console.log('Factorizada')
-for (let elementos of n2.rightPart){
-    console.log(elementos)
-}
+console.log(n2.rightPart)
+console.log(calculateFirst(n2.rightPart))
