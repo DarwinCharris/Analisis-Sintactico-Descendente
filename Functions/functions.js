@@ -249,8 +249,6 @@ function newcomponents(gram){
 }
 
 
-
-
 function calculateFirst(rightPart) {
     let firstSets = {};
 
@@ -266,14 +264,7 @@ function calculateFirst(rightPart) {
 
         for (let i = 0; i < str.length; i++) {
             canBeEmpty = false;
-            
-            // Detectar "id" como un terminal completo al inicio de la cadena
-            if (str.slice(i, i + 2) === "id") {
-                firstSet.add("id");
-                i++; // Avanza el índice para saltar el carácter "d"
-                canBeEmpty = false;
-                break;
-            } else if (!(str[i] >= 'A' && str[i] <= 'Z')) { // Es un terminal de un solo carácter
+            if (!(str[i] >= 'A' && str[i] <= 'Z')) { // Es un terminal de un solo carácter
                 firstSet.add(str[i]);
                 canBeEmpty = false;
                 break;
@@ -353,6 +344,24 @@ function next (gram, first, Nterminales){
 
 }
 
+function formatProductionsAsLists(rightPart) {
+    const formattedProductions = [];
+    for (let production of rightPart) {
+        // La primera posición de cada sublista es el no terminal, seguido de sus producciones
+        formattedProductions.push([production.NTerm, ...production.productions]);
+    }
+    return formattedProductions;
+}
+
+function formatFirstSetsAsLists(firstSets) {
+    const result = [];
+    for (let nonTerminal in firstSets) {
+        // Convierte el Set a Array y lo agrega a una lista junto con el no terminal
+        const firstList = [nonTerminal, ...Array.from(firstSets[nonTerminal])];
+        result.push(firstList);
+    }
+    return result;
+}
 
 let str = 'S->Sid\r\nS->B\r\nB->(id)i'
 //console.log(str)
@@ -377,3 +386,11 @@ for (const i in first){
     console.log(i)
     console.log(first[i])
 }
+
+
+let formattedData = formatProductionsAsLists(n2.rightPart);
+console.log("Producciones");
+console.log(formattedData);
+console.log("Primeros");
+let formattedFirstSets = formatFirstSetsAsLists(calculateFirst(n2.rightPart));
+console.log(formattedFirstSets);
