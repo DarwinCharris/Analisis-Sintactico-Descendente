@@ -434,7 +434,7 @@ fileInput.addEventListener("change", function () {
           if (item !== formattednter[formattednter.length - 1]) {
             formattednterText += `${item}, `;
           } else {
-            formattednterText += `${item}`;
+            formattednterText += `${item} `;
           }
         });
       }
@@ -452,7 +452,7 @@ fileInput.addEventListener("change", function () {
           if (item !== formattedter[formattedter.length - 1]) {
             formattedterText += `${item}, `;
           } else {
-            formattedterText += `${item}`;
+            formattedterText += `${item} `;
           }
         });
       }
