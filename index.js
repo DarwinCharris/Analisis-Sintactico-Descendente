@@ -15,6 +15,12 @@ let txt = ""; // Variable para almacenar el contenido del archivo
 
 const fileInput = document.getElementById('fileInput');
 const fileContent = document.getElementById('fileContent');
+const customButton = document.getElementById('customButton');
+
+// Abrir el diálogo de selección de archivo al hacer clic en el botón personalizado
+customButton.addEventListener('click', () => {
+  fileInput.click();
+});
 
 fileInput.addEventListener('change', function() {
   const file = this.files[0];
@@ -23,10 +29,11 @@ fileInput.addEventListener('change', function() {
     reader.onload = function(e) {
       txt = e.target.result; // Guardar el contenido en la variable txt
       fileContent.textContent = txt; // Mostrar el contenido en la página
-      console.log(txt)
+      console.log(txt);
       const lineas = txt.split('\r\n');
-      console.log(lineas)
+      console.log(lineas);
     };
     reader.readAsText(file);
   }
 });
+

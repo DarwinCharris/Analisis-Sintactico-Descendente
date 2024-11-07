@@ -1,0 +1,126 @@
+@import url('https://fonts.googleapis.com/css2?family=Dosis:wght@200..800&family=Public+Sans:ital,wght@0,100..900;1,100..900&family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap');
+body {
+    font-family: "Work Sans", sans-serif;
+    background-color: #e8e6e6; 
+    color: #1c1843;
+}
+
+#customButton {
+    padding: 8px 10px;
+    background-color: #140d50;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    height: 40px;
+    font-family:"Work Sans" ;
+}
+h1{
+    color: #140d50;
+}
+h4{
+    margin-top: 9px;
+    color:#140d50;
+    font-weight: 600;
+}
+#customButton:hover {
+    background-color: #828282;
+}
+
+#fileInput {
+    opacity: 0;
+    position: absolute;
+    z-index: -1;
+}
+.txt{
+    display: flex;
+    justify-content: center;
+    height: 40px;
+    gap: 15px; 
+}
+
+
+.string,
+.container-input {
+    background-color: #fff;
+    width: 950px;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    padding: 20px;
+}
+
+.container,
+.container-input {
+    display: flex;
+    justify-content: center; /* Centrado horizontal */
+    align-items: center;
+    flex-direction: column; /* Alinea el contenido en columna */
+    margin-top: 20px; /* Espacio superior opcional para ajustar la distancia desde arriba */
+
+}
+
+.container-cadena {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 10px;
+    max-width: 900px; /* Ancho máximo reducido para hacer los contenedores más pequeños */
+    margin-left: auto;
+    margin-right: auto; /* Centramos el contenedor */
+}
+
+.container-cadena input[type="text"] {
+    font-family: "Poppins", "sans-serif";
+    font-size: 12px;
+    width: 100%; /* Que ocupe todo el ancho disponible dentro del contenedor */
+    max-width: 500px; /* Ancho máximo del input */
+    margin-right: 10px; /* Margen inferior para separar del botón */
+}
+
+#cadena {
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ced4da;
+    transition: background-color 0.3s ease, border-color 0.3s ease; /* Transición suave */
+}
+
+#cadena::placeholder {
+    color: #6c757d; /* Placeholder de color suave */
+}
+
+#submitButton,
+#resetButton {
+    padding: 8px 10px;
+    background-color: #140d50;
+    font-family: "Poppins", "sans-serif";
+    color: white;
+    border: none;
+    font-size: 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease; /* Transición suave */
+}
+
+
+#submitButton {
+    margin-right: 5px;
+}
+
+
+#submitButton:hover,
+#resetButton:hover {
+    transform: scale(1.01); 
+    background-color: #828282;
+}
+  
+pre{
+    color: #000000;
+    font-size:x-large;
+    font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+
+.string{
+    margin-top: 20px;
+}

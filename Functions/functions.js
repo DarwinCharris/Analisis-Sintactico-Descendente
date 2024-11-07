@@ -387,10 +387,25 @@ for (const i in first){
     console.log(first[i])
 }
 
-
 let formattedData = formatProductionsAsLists(n2.rightPart);
-console.log("Producciones");
-console.log(formattedData);
+let formattedProductionsText = "Producciones:\n";
+formattedData.forEach(item => {
+  formattedProductionsText += `${item[0]} -> ${item.slice(1).join(' | ')}\n`;
+});
+document.getElementById('formattedProductions').textContent = formattedProductionsText;
+
+
 console.log("Primeros");
-let formattedFirstSets = formatFirstSetsAsLists(calculateFirst(n2.rightPart));
-console.log(formattedFirstSets);
+let formattedFirstSets = formatFirstSetsAsLists(first);
+let formattedFirstSetsText = "Conjuntos First:\n";
+formattedFirstSets.forEach(item => {
+  formattedFirstSetsText += `${item[0]} -> ${item.slice(1).join(' | ')}\n`;
+});
+document.getElementById('formattedFirstSets').textContent = formattedFirstSetsText;
+
+
+
+
+
+
+
