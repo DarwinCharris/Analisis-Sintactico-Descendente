@@ -66,12 +66,8 @@ function findTerminal(str) {
 function splitString(str) {
     const result = [];
     for (let i = 0; i < str.length; i++) {
-        if (str[i] === 'i' && str[i + 1] === 'd') {
-            result.push('id');
-            i++; // Saltamos el siguiente carácter ('d') ya que fue incluido como "id"
-        } else {
             result.push(str[i]);
-        }
+        
     }
     return result;
 }
@@ -326,8 +322,36 @@ function calculateFirst(rightPart) {
     return firstSets;
 }
 
+function next (gram, first, Nterminales){
+    let initial = Nterminales[0]
+    let alpha
+    let betha
+    let b
+    let next ={}
+    next[initial]=['$']
+    for (let prod of gram.rightPart){
+        for (let sub of prod.productions){
+            //Prod A->(1 o más elementos)
+            //Para 1: Si es terminal no aplica si es no terminal Aplica 2 alpha=&, B=nterminal, betha=& Aplica caso 3
 
+            //Para 2: En el caso 2i (alpha=&, B=nterminal betha= otro)(alpha=otro, B=nterminal betha=&), caso 3i normal, caso 3ii alpha=& y los 2 elementos tienen que ser nterminales
 
+            //Para 3 o más: nota, tiene que existir minimo 1 no terminal. 
+            //Para cumplir caso 2 (alpha= &) solo si la producción empieza por no terminal, para el otro caso ir recorriendo de la posición 1 (colocar la 0 en alpha, la  1 en b y las otras en betha) sacarla e ir corriendo hasta que b deje de ser no terminal, si la prod termina en no terminal aplicar (alpha=todo lo anterior, B= ultimo, betha=&)
+            //Aplicar 3i para 3 o más solo es posible cuando el ultimo elemento es no terminal
+            //Para aplicar 3ii con 3 o más se hace el mismo procedimiento que en 2 (se puede hacer en el mismo ciclo)
+
+            //PASOS
+            //Splitear sub (tener cuidado al splitear los no terminales con prima jajaja)
+            //crear las funciones de 2, 3i y 3ii, que solo cojan los 3 componentes y devuelvan el conjunto siguiente (que valide si betha tiene & para el 3ii)
+            //analizar el tamaño que sub splitteado (aplicarle los pasos 2,3i y 3ii segun el tamaño de sub (1,2 o más elementos))
+            //Cada que generes una combinación aplha, B, betha aplica la función 2, 3i y 3ii sobre ellos y añade los conjuntos a next para esa producción (Solucionar cuando queda pendiente un siguiente.)
+            //AL final retornar netx
+            //Creo que el algoritmo soluciona hasta cosas estrambotricas pero Dios proveera. 
+        }
+    }
+
+}
 
 
 let str = 'S->Sid\r\nS->B\r\nB->(id)i'
@@ -341,10 +365,15 @@ let n2 = factorization(nueva)
 for (let elemento of nueva.rightPart){
     console.log(elemento)
 }
+
 //Factorizada
-let [terminales2, noterminales2 ]= newcomponents(n2)
+let [terminales2,noterminales2] = newcomponents(n2)
 console.log(terminales2)
 console.log(noterminales2)
 console.log('Factorizada')
 console.log(n2.rightPart)
-console.log(calculateFirst(n2.rightPart))
+let first = calculateFirst(n2.rightPart)
+for (const i in first){
+    console.log(i)
+    console.log(first[i])
+}
