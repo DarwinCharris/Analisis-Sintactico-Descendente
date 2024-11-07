@@ -126,12 +126,18 @@ function leftRecursion(gram) {
     }
     if (X.length > 0) {
       for (let yi of Y) {
-        let left = element.NTerm;
-        let right = yi + element.NTerm + "'";
-        newgram.add(left, right);
+        if(yi==='&'){
+          newgram.add(`${element.NTerm}`, `${element.NTerm}'`);
+        }else{
+          newgram.add(`${element.NTerm}`, `${yi}${element.NTerm}'`);
+        }
       }
       for (let xi of X) {
-        newgram.add(`${element.NTerm}'`, `${xi}${element.NTerm}'`);
+        if(xi==='&'){
+          newgram.add(`${element.NTerm}'`, `${element.NTerm}'`);
+        }else{
+          newgram.add(`${element.NTerm}'`, `${xi}${element.NTerm}'`);
+        }
       }
       newgram.add(`${element.NTerm}'`, "&");
     } else {
