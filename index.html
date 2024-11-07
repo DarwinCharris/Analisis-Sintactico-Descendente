@@ -1,54 +1,47 @@
 <!DOCTYPE html>
 <html lang="eS">
+
 <head>
-    <meta charset="UTF-8">
-    
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Análsis Sintáctico Descendiente</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Análsis Sintáctico Descendiente</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 </head>
+
 <body>
-  <h1 class="container">Ánalisis Sintáctico Descendiente</h1>
-
+  <h1 class="container">Syntax Lab</h1>
   <div class="container">
-
     <div class="string">
       <div class="txt">
-        <h4>Selecciona un archivo formato txt</h4>
+        <h4>Selecciona un archivo en formato txt</h4>
         <input type="file" id="fileInput" accept=".txt">
-    
         <button id="customButton"><img src="icon.svg" alt=""></button>
-      </div> 
+      </div>
 
       <div class="container-cadena hidden">
         <input type="text" id="cadena" placeholder="Reconocer cadena">
         <button id="submitButton"><img src="check.svg" alt=""></button>
-        <button id="resetButton"><img src="reload.svg" alt=""></button> 
-      </div>  
-    </div>  
+        <button id="resetButton"><img src="reload.svg" alt=""></button>
+      </div>
+    </div>
     <div class="container-input">
-      <h2>Gramática Seleccionada</h2>
+      <h2>Gramática seleccionada</h2>
       <pre id="fileContent"> </pre>
-    </div> 
-
+    </div>
     <div class="string">
-      
       <div class="container-output">
         <h2>Gramática sin recursividad y factorizada a la izquierda</h2>
         <pre id="formattedProductions"></pre>
       </div>
-      
       <div class="container-output">
-        <h2>Conjuntos Primeros</h2>
+        <h2>Conjunto de primeros</h2>
         <pre id="formattedFirstSets"></pre>
       </div>
     </div>
-  </div>  
-
-
-
-
-  <script src="./index.js"></script>
+  </div>
   <script src="./Functions/functions.js"></script>
 </body>
 </html>

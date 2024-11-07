@@ -363,12 +363,55 @@ function formatFirstSetsAsLists(firstSets) {
     return result;
 }
 
+// HACE PARTE DEL FRONT ESTOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO ----------------------------------------------------------------------------------
+
+// var arrayData = new Array();
+// var archivotxt = new XMLHttpRequest();
+// var fileRuta = 'data.txt';
+// archivotxt.open("GET",fileRuta, false);
+// archivotxt.send(null);
+// var txt = archivotxt.responseText;
+// for (var i=0; i< txt.length; i++){
+//     arrayData.push(txt[i]);
+// }
+// console.log(txt)
+// const lineas = txt.split('\r\n');
+// console.log(lineas)
+
+let txt = ""; // Variable para almacenar el contenido del archivo
+
+const fileInput = document.getElementById('fileInput');
+const fileContent = document.getElementById('fileContent');
+const customButton = document.getElementById('customButton');
+
+// Abrir el diálogo de selección de archivo al hacer clic en el botón personalizado
+customButton.addEventListener('click', () => {
+  fileInput.click();
+});
+
+fileInput.addEventListener('change', function() {
+  const file = this.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      txt = e.target.result; // Guardar el contenido en la variable txt
+      fileContent.textContent = txt; // Mostrar el contenido en la página
+      console.log(txt);
+      const lineas = txt.split('\r\n');
+      console.log(lineas);
+       // Crear una cadena en formato 'S->Sid\r\nS->B\r\nB->(id)i'
+       const formattedStr = lineas.join("\r\n"); // Unir las líneas con \r\n
+       console.log("Cadena formateada:", formattedStr); // Mostrar el formato deseado
+ 
+    };
+    reader.readAsText(file);
+  }
+});
+
+
+
 let str = 'S->Sid\r\nS->B\r\nB->(id)i'
-//console.log(str)
-//console.log(validate(str))
 let[terminales, noterminales, gramatica] = components(str)
-//console.log(noterminales)
-//console.log(terminales)
 let nueva = leftRecursion(gramatica)
 let n2 = factorization(nueva)
 for (let elemento of nueva.rightPart){
@@ -397,14 +440,11 @@ document.getElementById('formattedProductions').textContent = formattedProductio
 
 console.log("Primeros");
 let formattedFirstSets = formatFirstSetsAsLists(first);
-let formattedFirstSetsText = "Conjuntos First:\n";
+let formattedFirstSetsText = "Primeros:\n";
 formattedFirstSets.forEach(item => {
-  formattedFirstSetsText += `${item[0]} -> ${item.slice(1).join(' | ')}\n`;
+  formattedFirstSetsText += `${item[0]} -> ${item.slice(1).join(' , ')}\n`;
 });
 document.getElementById('formattedFirstSets').textContent = formattedFirstSetsText;
-
-
-
 
 
 
