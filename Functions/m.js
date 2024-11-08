@@ -72,6 +72,7 @@ const follows = {
   B: ["i", "$"],
 };
 
+
 // Nueva gramática (estructura modificada)
 const grammar = {
   rightPart: [
@@ -83,6 +84,6 @@ const grammar = {
 
 initializeTableM(nonTerminals, terminals);
 // Construimos la tabla M
-buildTableM(splitProvarious(grammar), firsts, follows);
+buildTableM(splitProvarious(grammar), firsts, followsnew);
 // Mostrar la tabla M
 console.log(tableM);

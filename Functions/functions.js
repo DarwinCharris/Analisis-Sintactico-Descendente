@@ -126,16 +126,16 @@ function leftRecursion(gram) {
     }
     if (X.length > 0) {
       for (let yi of Y) {
-        if(yi==='&'){
+        if (yi === "&") {
           newgram.add(`${element.NTerm}`, `${element.NTerm}'`);
-        }else{
+        } else {
           newgram.add(`${element.NTerm}`, `${yi}${element.NTerm}'`);
         }
       }
       for (let xi of X) {
-        if(xi==='&'){
+        if (xi === "&") {
           newgram.add(`${element.NTerm}'`, `${element.NTerm}'`);
-        }else{
+        } else {
           newgram.add(`${element.NTerm}'`, `${xi}${element.NTerm}'`);
         }
       }
@@ -250,7 +250,6 @@ function newcomponents(gram) {
   return [terminals, noTerminals];
 }
 
-
 function calculateFirst(rightPart) {
   let firstSets = {};
 
@@ -279,7 +278,7 @@ function calculateFirst(rightPart) {
           } else {
             canBeEmpty = true;
           }
-        } // A -> B  -> epsilon 
+        } // A -> B  -> epsilon
         if (!canBeEmpty) {
           break;
         }
@@ -322,19 +321,16 @@ class Follow {
     this.generate(grammar, firstSet);
   }
 
-  
   add(non_terminal, set) {
     const existing_set = this.data.get(non_terminal) || new Set();
     this.data.set(non_terminal, new Set([...existing_set, ...set]));
   }
-
 
   get(non_terminal) {
     const set = this.data.get(non_terminal);
     if (!set) throw new Error(`Non-terminal '${non_terminal}' not found.`);
     return set;
   }
-
 
   generate(grammar, firstSet) {
     function _follow(non_terminal, stack = new Set()) {
@@ -413,7 +409,11 @@ function splitProduction(grammar) {
         const filteredPart = [];
         while (i < part.length) {
           // Si encontramos una letra mayúscula seguida de un apóstrofe, tratamos como un solo símbolo
-          if (i < part.length - 1 && part[i].match(/[A-Z]/) && part[i + 1] === "'") {
+          if (
+            i < part.length - 1 &&
+            part[i].match(/[A-Z]/) &&
+            part[i + 1] === "'"
+          ) {
             filteredPart.push(part[i] + "'");
             i += 2; // Avanzamos 2 posiciones, ya que hemos procesado el par
           } else {
@@ -438,7 +438,6 @@ function convertFirstToArray(input) {
   return result;
 }
 
-
 function convertFollowToArray(input) {
   let result = [];
   input.data.forEach((set, nonTerminal) => {
@@ -447,6 +446,13 @@ function convertFollowToArray(input) {
   return result;
 }
 
+function convertFollowToObject(followData) {
+  const result = {};
+  followData.data.forEach((set, key) => {
+    result[key] = Array.from(set);
+  });
+  return result;
+}
 
 function splitProvarious(grammar) {
   let newProductions = {
@@ -504,14 +510,6 @@ function getFirst(productions, firsts) {
   return [...new Set(result)];
 }
 
-
-
-
-
-
-
-
-
 let formattedStr = "";
 
 formattedStr = "S->Sid\r\nS->B\r\nB->(id)i\r\nB->&";
@@ -520,32 +518,25 @@ let nueva = leftRecursion(gramatica);
 let n2 = factorization(nueva);
 
 let [terminales2, noterminales2] = newcomponents(n2);
-console.log("Nueva gramatica")
+console.log("Nueva gramatica");
 console.log(n2.rightPart);
-console.log("Terminales")
+console.log("Terminales");
 console.log(terminales2);
-console.log("No terminales")
+console.log("No terminales");
 console.log(noterminales2);
-console.log("Primeros")
+console.log("Primeros");
 let first = calculateFirst(n2.rightPart);
 console.log(convertFirstToArray(first));
 const newGrammar = splitProduction(n2);
-console.log("Siguientes")
+console.log("Siguientes");
 const follow = new Follow(newGrammar, first);
 console.log(follow);
-
-
-
-const follows = {};
-follow.forEach((set, key) => {
-  follows[key] = Array.from(set);
-});
-
-
-console.log(follownew);
+const followsa = convertFollowToObject(follow);
+console.log(followsa);
 initializeTableM(noterminales2, terminales2);
-buildTableM(splitProvarious(n2), first, follows);
+buildTableM(splitProvarious(n2), first, followsa);
 console.log(tableM);
+
 
 
 /*
@@ -569,7 +560,6 @@ function formatFirstSetsAsLists(firstSets) {
   return result;
 }
 */
-
 
 /*
 // HACE PARTE DEL FRONT ESTOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO ----------------------------------------------------------------------------------
