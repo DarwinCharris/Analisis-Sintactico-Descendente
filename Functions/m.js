@@ -84,6 +84,6 @@ const grammar = {
 
 initializeTableM(nonTerminals, terminals);
 // Construimos la tabla M
-buildTableM(splitProvarious(grammar), firsts, followsnew);
+buildTableM(splitProvarious(grammar), firsts, follows);
 // Mostrar la tabla M
 console.log(tableM);
