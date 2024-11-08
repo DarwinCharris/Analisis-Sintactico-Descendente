@@ -430,6 +430,22 @@ function splitProduction(grammar) {
   return newProductions;
 }
 
+function convertFirstToArray(input) {
+  let result = [];
+  for (let nonTerminal in input) {
+    result.push([nonTerminal, ...Array.from(input[nonTerminal])]);
+  }
+  return result;
+}
+
+
+function convertFollowToArray(input) {
+  let result = [];
+  input.data.forEach((set, nonTerminal) => {
+    result.push([nonTerminal, ...Array.from(set)]);
+  });
+  return result;
+}
 
 let formattedStr = "";
 
@@ -439,7 +455,6 @@ let nueva = leftRecursion(gramatica);
 let n2 = factorization(nueva);
 
 let [terminales2, noterminales2] = newcomponents(n2);
-
 console.log("Nueva gramatica")
 console.log(n2.rightPart);
 console.log("Terminales")
@@ -448,31 +463,11 @@ console.log("No terminales")
 console.log(noterminales2);
 console.log("Primeros")
 let first = calculateFirst(n2.rightPart);
-console.log(first);
+console.log(convertFirstToArray(first));
 const newGrammar = splitProduction(n2);
 console.log("Siguientes")
 const follow = new Follow(newGrammar, first);
-console.log(follow)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+console.log(convertFollowToArray(follow))
 
 
 /*
