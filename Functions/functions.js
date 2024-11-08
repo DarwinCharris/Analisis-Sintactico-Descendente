@@ -4,7 +4,6 @@ class Produccion {
     this.productions = productions; // Lista de producciones
   }
 }
-
 class Gramatica {
   constructor() {
     this.rightPart = []; // Inicializa la lista de producciones
@@ -126,16 +125,16 @@ function leftRecursion(gram) {
     }
     if (X.length > 0) {
       for (let yi of Y) {
-        if(yi==='&'){
+        if (yi === "&") {
           newgram.add(`${element.NTerm}`, `${element.NTerm}'`);
-        }else{
+        } else {
           newgram.add(`${element.NTerm}`, `${yi}${element.NTerm}'`);
         }
       }
       for (let xi of X) {
-        if(xi==='&'){
+        if (xi === "&") {
           newgram.add(`${element.NTerm}'`, `${element.NTerm}'`);
-        }else{
+        } else {
           newgram.add(`${element.NTerm}'`, `${xi}${element.NTerm}'`);
         }
       }
@@ -250,6 +249,18 @@ function newcomponents(gram) {
   return [terminals, noTerminals];
 }
 
+function customSplit(str) {
+  const result = [];
+  for (let i = 0; i < str.length; i++) {
+      if (str[i] === "'" && i > 0) {
+          result[result.length - 1] += str[i];
+      } else {
+          result.push(str[i]);
+      }
+  }
+  return result;
+}
+
 function calculateFirst(rightPart) {
   let firstSets = {};
 
@@ -278,8 +289,7 @@ function calculateFirst(rightPart) {
           } else {
             canBeEmpty = true;
           }
-        } /* A -> B 
-                      B -> epsilon */
+        } // A -> B  -> epsilon
         if (!canBeEmpty) {
           break;
         }
@@ -319,8 +329,6 @@ function calculateFirst(rightPart) {
       if(lista[0].length ===2 || (lista[i] >= "A" && lista[i] <= "Z")){
         if(firstSets[lista[0]].has('&')){
           if(lista[1].length ===2 || (lista[i] >= "A" && lista[i] <= "Z")){
-            console.log('Set que quiero evaluar: ', firstSets[grm.NTerm])
-            console.log('Set que quiero agregar: ', firstSets[lista[1]])
             firstSets[lista[1]].forEach(valor => firstSets[grm.NTerm].add(valor));
           }else{
             firstSets[grm.NTerm].add([lista[1]])
@@ -330,73 +338,328 @@ function calculateFirst(rightPart) {
       }
     }
   }
+
   return firstSets;
 }
-function llenar_pendiente (gram){
-  let pendiente = {}
-  for (prod of gram.rightPart){
-    pendiente[prod.NTerm]=[]
+
+class Follow {
+  constructor(grammar, firstSet) {
+    this.data = new Map();
+    this.generate(grammar, firstSet);
   }
-  return pendiente
-}
-function customSplit(str) {
-    const result = [];
-    for (let i = 0; i < str.length; i++) {
-        if (str[i] === "'" && i > 0) {
-            result[result.length - 1] += str[i];
-        } else {
-            result.push(str[i]);
+
+  add(non_terminal, set) {
+    const existing_set = this.data.get(non_terminal) || new Set();
+    this.data.set(non_terminal, new Set([...existing_set, ...set]));
+  }
+
+  get(non_terminal) {
+    const set = this.data.get(non_terminal);
+    if (!set) throw new Error(`Non-terminal '${non_terminal}' not found.`);
+    return set;
+  }
+
+  generate(grammar, firstSet) {
+    function _follow(non_terminal, stack = new Set()) {
+      stack.add(non_terminal);
+      let follow = new Set();
+
+      grammar.rightPart.forEach((prod) => {
+        const header = prod.NTerm;
+        const body = prod.productions;
+
+        for (let i = 0; i < body.length; i++) {
+          const symbol = body[i];
+
+          if (symbol === non_terminal) {
+            const beta = body.slice(i + 1);
+
+            if (beta.length === 0 && !stack.has(header)) {
+              follow = new Set([...follow, ..._follow(header, stack)]);
+              if (header === "S") {
+                follow.add("$");
+              }
+            } else {
+              const firstBeta = beta.reduce(
+                (acc, symbol) => new Set([...acc, ...firstSet[symbol]]),
+                new Set()
+              );
+
+              follow = new Set([
+                ...follow,
+                ...[...firstBeta].filter((item) => item !== "&"),
+              ]);
+
+              if (firstBeta.has("&") && !stack.has(header)) {
+                follow = new Set([...follow, ..._follow(header, stack)]);
+                if (header === "S") {
+                  follow.add("$");
+                }
+              }
+            }
+          }
         }
+      });
+
+      return follow;
     }
-    return result;
-}
-function caso2 (b, betha, primeros, next){
-  if(betha !=='&'){
-    next[b] =[... primeros[betha]].filter(caracter => caracter !== '&');
+
+    const S = "S";
+    this.add(S, new Set(["$"]));
+
+    grammar.rightPart.forEach((prod) => {
+      const non_terminal = prod.NTerm;
+      this.add(non_terminal, _follow(non_terminal));
+    });
+  }
+
+  print() {
+    const table_data = Array.from(this.data.entries()).map(([key, value]) => ({
+      non_terminal: key,
+      follow: Array.from(value),
+    }));
+    console.table(table_data);
   }
 }
-function caso3i(){
-  
-}
-function next(gram, first, Nterminales) {
-  let initial = Nterminales[0];
-  let alpha;
-  let betha;
-  let b;
-  let next = llenar_pendiente(gram)
-  let pendiente = llenar_pendiente(gram)
-  next[initial].push('$');
-  for (let prod of gram.rightPart) {
-    for (let sub of prod.productions) {
-      //Prod A->(1 o más elementos)
-      //Para 1: Si es terminal no aplica si es no terminal Aplica 2 alpha=&, B=nterminal, betha=& Aplica caso 3
-      //Para 2: En el caso 2i (alpha=&, B=nterminal betha= otro)(alpha=otro, B=nterminal betha=&), caso 3i normal, caso 3ii alpha=& y los 2 elementos tienen que ser nterminales
-      //Para 3 o más: nota, tiene que existir minimo 1 no terminal.
-      //Para cumplir caso 2 (alpha= &) solo si la producción empieza por no terminal, para el otro caso ir recorriendo de la posición 1 (colocar la 0 en alpha, la  1 en b y las otras en betha) sacarla e ir corriendo hasta que b deje de ser no terminal, si la prod termina en no terminal aplicar (alpha=todo lo anterior, B= ultimo, betha=&)
-      //Aplicar 3i para 3 o más solo es posible cuando el ultimo elemento es no terminal
-      //Para aplicar 3ii con 3 o más se hace el mismo procedimiento que en 2 (se puede hacer en el mismo ciclo)
-      //PASOS
-      //Splitear sub (tener cuidado al splitear los no terminales con prima jajaja)
-      //crear las funciones de 2, 3i y 3ii, que solo cojan los 3 componentes y devuelvan el conjunto siguiente (que valide si betha tiene & para el 3ii)
-      //analizar el tamaño que sub splitteado (aplicarle los pasos 2,3i y 3ii segun el tamaño de sub (1,2 o más elementos))
-      //Cada que generes una combinación aplha, B, betha aplica la función 2, 3i y 3ii sobre ellos y añade los conjuntos a next para esa producción (Solucionar cuando queda pendiente un siguiente.)
-      //AL final retornar netx
-      //Creo que el algoritmo soluciona hasta cosas estrambotricas pero Dios proveera.
-      let elementos = customSplit(sub)
-      if (elementos.length ===1){
-        if(Nterminales.includes(elementos[0])){
-          alpha = '&'
-          b= elementos[0]
-          betha = '&'
+
+function splitProduction(grammar) {
+  let newProductions = {
+    rightPart: [],
+  };
+
+  grammar.rightPart.forEach((prod) => {
+    const { NTerm, productions } = prod;
+    if (productions.length > 0) {
+      productions.forEach((part) => {
+        // Dividir la cadena en caracteres y procesar
+        let i = 0;
+        const filteredPart = [];
+        while (i < part.length) {
+          // Si encontramos una letra mayúscula seguida de un apóstrofe, tratamos como un solo símbolo
+          if (
+            i < part.length - 1 &&
+            part[i].match(/[A-Z]/) &&
+            part[i + 1] === "'"
+          ) {
+            filteredPart.push(part[i] + "'");
+            i += 2; // Avanzamos 2 posiciones, ya que hemos procesado el par
+          } else {
+            filteredPart.push(part[i]);
+            i++; // Avanzamos 1 posición para el siguiente carácter
+          }
         }
-      }else if (elementos.length ===2){
 
-      }else{
+        newProductions.rightPart.push({ NTerm, productions: filteredPart });
+      });
+    }
+  });
 
+  return newProductions;
+}
+
+// Para la printeada
+function convertFirstToArray(input) {
+  let result = [];
+  for (let nonTerminal in input) {
+    result.push([nonTerminal, ...Array.from(input[nonTerminal])]);
+  }
+  return result;
+}
+
+function convertFollowToArray(input) {
+  let result = [];
+  input.data.forEach((set, nonTerminal) => {
+    result.push([nonTerminal, ...Array.from(set)]);
+  });
+  return result;
+}
+
+//Para tabla M
+
+function convertFollowToObject(followData) {
+  const result = {};
+  followData.data.forEach((set, key) => {
+    result[key] = Array.from(set);
+  });
+  return result;
+}
+
+function convertSetsToArrays(first) {
+  // Convertir FIRST
+  const firstAsArrays = {};
+  for (const [nonTerminal, set] of Object.entries(first)) {
+    firstAsArrays[nonTerminal] = Array.from(set);
+  }
+  return firstAsArrays; // Devolvemos el objeto convertido
+}
+
+// cada produccion en una linea (para tabla M)
+function splitProvarious(grammar) {
+  let newProductions = {
+    rightPart: [],
+  };
+  grammar.rightPart.forEach((prod) => {
+    const { NTerm, productions } = prod;
+    if (productions.length > 0) {
+      productions.forEach((productions) => {
+        newProductions.rightPart.push({ NTerm, productions });
+      });
+    }
+  });
+  return newProductions;
+}
+
+let tableM = {}; //Tabla M
+
+function initializeTableM(nonTerminals, terminals) {
+  nonTerminals.forEach((nonTerminal) => {
+    tableM[nonTerminal] = {};
+    terminals.forEach((terminal) => {
+      tableM[nonTerminal][terminal] = null;
+    });
+    tableM[nonTerminal]["$"] = null;
+  });
+}
+
+// Construye la tabla M
+function buildTableM(grammar, firsts, follows) {
+  grammar.rightPart.forEach(({ NTerm, productions }) => {
+    // Obtén FIRST(α) para la producción A -> α
+    const firstAlpha = getFirst(productions, firsts);
+    firstAlpha.forEach((symbol) => {
+      if (symbol !== "&") {
+        tableM[NTerm][symbol] = `${NTerm}->${productions}`; // Añadir la producción
+      }
+    });
+    // Si ε está en FIRST(α), usar FOLLOW(A)
+    if (firstAlpha.includes("&")) {
+      follows[NTerm].forEach((symbol) => {
+        tableM[NTerm][symbol] = `${NTerm}->${productions}`; // Añadir la producción
+      });
+    }
+  });
+}
+
+// Función getFirst: Obtiene el conjunto FIRST de una cadena de producción
+function getFirst(productions, firsts) {
+  let result = [];
+  if (firsts[productions[0][0]]) {
+    result = result.concat(firsts[productions[0][0]]);
+  } else {
+    result = result.concat(productions[0][0]);
+  }
+  return [...new Set(result)];
+}
+
+// para reconcimiento 
+function printstack(stack) {
+  let str = "";
+  for (let i = 0; i < stack.length; i++) {
+    str += stack[i];
+  }
+  return str;
+}
+
+function parse(input, M) {
+  let stack = ["$", "S"];
+  input += "$"; // Agregamos el símbolo de fin de cadena a la entrada
+  while (stack.length > 0) {
+    console.log(`${printstack(stack)}         ${input}`);
+    let X = stack.pop(); // Obtenemos el símbolo en la cima de la pila
+    let a = input[0]; // Obtenemos el símbolo actual de la entrada
+
+    if (X === "'") {
+      if (stack.length >= 2) {
+        X = stack.pop() + X;
+      }
+    }
+
+    if (X === "$" && a === "$") {
+      console.log("Cadena aceptada.");
+      return true;
+    }
+
+    if (isTerminal(X) || X === "$") {
+      if (X === a) {
+        input = input.slice(1); // Avanzamos en la cadena de entrada
+      } else {
+        console.error("Error: el símbolo no coincide.");
+        return;
+      }
+    } else {
+      // X es un no terminal
+      const production = M[X][a];
+      console.log("");
+      console.log(production);
+      console.log("");
+      if (production !== null) {
+        const [left, right] = production.split("->");
+        if (right !== "&") {
+          for (let i = right.length - 1; i >= 0; i--) {
+            if (right[i] === "'") {
+              stack.push(right[i - 1] + right[i]);
+              i--;
+            } else {
+              stack.push(right[i]);
+            }
+          }
+        }
+      } else {
+        console.error("Error: no hay producción en la tabla para este par.");
+        return;
       }
     }
   }
+  console.log("Cadena no aceptada.");
 }
+
+// Función para verificar si un símbolo es terminal
+function isTerminal(symbol) {
+  return !/[A-Z]/.test(symbol);
+}
+
+
+let formattedStr = "";
+// NO BORRAR NINGUN CONSOLE 
+formattedStr = "S->Bid\r\nS->B\r\nB->(id)i\r\nB->&";
+let [terminales, noterminales, gramatica] = components(String(formattedStr));
+let nueva = leftRecursion(gramatica);
+let n2 = factorization(nueva);
+let [terminales2, noterminales2] = newcomponents(n2);
+console.log("Nueva gramatica");
+console.log(n2.rightPart);
+console.log("Terminales");
+console.log(terminales2);
+console.log("No terminales");
+console.log(noterminales2);
+console.log("Primeros");
+let first = calculateFirst(n2.rightPart);
+console.log(convertFirstToArray(first));
+const newGrammar = splitProduction(n2);
+console.log("Siguientes");
+const follow = new Follow(newGrammar, first);
+console.log(convertFollowToArray(follow));
+const followsa = convertFollowToObject(follow);
+console.log("Siguientes para tabla M"); //son los mismos de arriba pero con una estructura diferente
+console.log(followsa);
+console.log("Primeros para tabla M"); //son los mismos de arriba pero con una estructura diferente
+firstnew = convertSetsToArrays(first);
+console.log(firstnew);
+initializeTableM(noterminales2, terminales2);
+buildTableM(splitProvarious(n2), firstnew, followsa);
+console.log("Tabla M");
+console.log(tableM);
+console.log("Reconocer cadena");
+console.log(parse("(id)i", tableM));
+
+
+
+
+
+
+
+
+/*
 
 function formatProductionsAsLists(rightPart) {
   const formattedProductions = [];
@@ -416,35 +679,11 @@ function formatFirstSetsAsLists(firstSets) {
   }
   return result;
 }
+*/
 
-
-
-let str = 'S->Bid\r\nS->B\r\nB->(id)i\r\nB->&'
-//console.log(str)
-//console.log(validate(str))
-let[terminales, noterminales, gramatica] = components(str)
-//console.log(noterminales)
-//console.log(terminales)
-let nueva = leftRecursion(gramatica)
-let n2 = factorization(nueva)
-let first = calculateFirst(n2.rightPart);
-for (let elemento of nueva.rightPart){
-    console.log(elemento)
-}
+/*
 // HACE PARTE DEL FRONT ESTOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO ----------------------------------------------------------------------------------
 
-// var arrayData = new Array();
-// var archivotxt = new XMLHttpRequest();
-// var fileRuta = 'data.txt';
-// archivotxt.open("GET",fileRuta, false);
-// archivotxt.send(null);
-// var txt = archivotxt.responseText;
-// for (var i=0; i< txt.length; i++){
-//     arrayData.push(txt[i]);
-// }
-// console.log(txt)
-// const lineas = txt.split('\r\n');
-// console.log(lineas)
 
 let txt = ""; // Variable para almacenar el contenido del archivo
 let formattedStr = "";
@@ -481,7 +720,7 @@ fileInput.addEventListener("change", function () {
       console.log(terminales2);
       console.log(noterminales2);
       console.log("Factorizada");
-      console.log(n2.rightPart);
+      console.log( n2.rightPart);
       let first = calculateFirst(n2.rightPart);
       for (const i in first) {
         console.log(i);
@@ -536,8 +775,6 @@ fileInput.addEventListener("change", function () {
 
       console.log("Primeros");
       let formattedFirstSets = formatFirstSetsAsLists(first);
-      console.log('listassss?')
-      console.log(first)
       let formattedFirstSetsText = "";
       formattedFirstSets.forEach((item) => {
         formattedFirstSetsText += `Prim(${item[0]}) = { ${item
@@ -550,36 +787,4 @@ fileInput.addEventListener("change", function () {
     reader.readAsText(file);
   }
 });
-
-
-
-function splitProduction(grammar) {
-    let newProductions = {
-        rightPart: [
-        ],
-      };
-    
-    grammar.rightPart.forEach((prod) => {
-      const { leftPart, rightPart } = prod;
-      if (rightPart.length > 0) {
-        rightPart.forEach((part) => {
-          // Dividir los caracteres de cada string en rightPart
-          
-          newProductions.rightPart.push({ leftPart, rightPart: part.split("") });
-        });
-      } 
-    });
-    return newProductions;
-  }
-  
-
-  const grammar = {
-    rightPart: [
-      { leftPart: "S", rightPart: ["BS'"] },
-      { leftPart: "S'", rightPart: ["id", "&"] },
-      { leftPart: "B", rightPart: ["(id)i", "&"] },
-    ],
-  };
-
-  const newGrammar = splitProduction(grammar);
-  console.log(newGrammar.rightPart);
+*/
