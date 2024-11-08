@@ -1,4 +1,4 @@
-S->aAb
-S->aAc
-A->Aa
-A->&
+S->Bid
+S->B
+B->(id)i
+B->&
