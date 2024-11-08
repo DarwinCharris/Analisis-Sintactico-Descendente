@@ -447,6 +447,71 @@ function convertFollowToArray(input) {
   return result;
 }
 
+
+function splitProvarious(grammar) {
+  let newProductions = {
+    rightPart: [],
+  };
+  grammar.rightPart.forEach((prod) => {
+    const { NTerm, productions } = prod;
+    if (productions.length > 0) {
+      productions.forEach((productions) => {
+        newProductions.rightPart.push({ NTerm, productions });
+      });
+    }
+  });
+  return newProductions;
+}
+
+let tableM = {};
+function initializeTableM(nonTerminals, terminals) {
+  nonTerminals.forEach((nonTerminal) => {
+    tableM[nonTerminal] = {};
+    terminals.forEach((terminal) => {
+      tableM[nonTerminal][terminal] = null;
+    });
+    tableM[nonTerminal]["$"] = null;
+  });
+}
+
+// Construye la tabla M
+function buildTableM(grammar, firsts, follows) {
+  grammar.rightPart.forEach(({ NTerm, productions }) => {
+    // Obtén FIRST(α) para la producción A -> α
+    const firstAlpha = getFirst(productions, firsts);
+    firstAlpha.forEach((symbol) => {
+      if (symbol !== "&") {
+        tableM[NTerm][symbol] = `${NTerm}->${productions}`; // Añadir la producción
+      }
+    });
+    // Si ε está en FIRST(α), usar FOLLOW(A)
+    if (firstAlpha.includes("&")) {
+      follows[NTerm].forEach((symbol) => {
+        tableM[NTerm][symbol] = `${NTerm} ->${productions}`; // Añadir la producción
+      });
+    }
+  });
+}
+
+// Función getFirst: Obtiene el conjunto FIRST de una cadena de producción
+function getFirst(productions, firsts) {
+  let result = [];
+  if (firsts[productions[0][0]]) {
+    result = result.concat(firsts[productions[0][0]]);
+  } else {
+    result = result.concat(productions[0][0]);
+  }
+  return [...new Set(result)];
+}
+
+
+
+
+
+
+
+
+
 let formattedStr = "";
 
 formattedStr = "S->Sid\r\nS->B\r\nB->(id)i\r\nB->&";
@@ -467,7 +532,20 @@ console.log(convertFirstToArray(first));
 const newGrammar = splitProduction(n2);
 console.log("Siguientes")
 const follow = new Follow(newGrammar, first);
-console.log(convertFollowToArray(follow))
+console.log(follow);
+
+
+
+const follows = {};
+follow.forEach((set, key) => {
+  follows[key] = Array.from(set);
+});
+
+
+console.log(follownew);
+initializeTableM(noterminales2, terminales2);
+buildTableM(splitProvarious(n2), first, follows);
+console.log(tableM);
 
 
 /*
