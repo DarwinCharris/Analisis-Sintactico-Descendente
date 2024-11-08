@@ -316,147 +316,166 @@ function calculateFirst(rightPart) {
   return firstSets;
 }
 
-
-/*
-function next(gram, first, Nterminales) {
-  let initial = Nterminales[0];
-  let alpha;
-  let betha;
-  let b;
-  let next = {};
-  next[initial] = ["$"];
-  for (let prod of gram.rightPart) {
-    for (let sub of prod.productions) {
-      //Prod A->(1 o más elementos)
-      //Para 1: Si es terminal no aplica si es no terminal Aplica 2 alpha=&, B=nterminal, betha=& Aplica caso 3
-      //Para 2: En el caso 2i (alpha=&, B=nterminal betha= otro)(alpha=otro, B=nterminal betha=&), caso 3i normal, caso 3ii alpha=& y los 2 elementos tienen que ser nterminales
-      //Para 3 o más: nota, tiene que existir minimo 1 no terminal.
-      //Para cumplir caso 2 (alpha= &) solo si la producción empieza por no terminal, para el otro caso ir recorriendo de la posición 1 (colocar la 0 en alpha, la  1 en b y las otras en betha) sacarla e ir corriendo hasta que b deje de ser no terminal, si la prod termina en no terminal aplicar (alpha=todo lo anterior, B= ultimo, betha=&)
-      //Aplicar 3i para 3 o más solo es posible cuando el ultimo elemento es no terminal
-      //Para aplicar 3ii con 3 o más se hace el mismo procedimiento que en 2 (se puede hacer en el mismo ciclo)
-      //PASOS
-      //Splitear sub (tener cuidado al splitear los no terminales con prima jajaja)
-      //crear las funciones de 2, 3i y 3ii, que solo cojan los 3 componentes y devuelvan el conjunto siguiente (que valide si betha tiene & para el 3ii)
-      //analizar el tamaño que sub splitteado (aplicarle los pasos 2,3i y 3ii segun el tamaño de sub (1,2 o más elementos))
-      //Cada que generes una combinación aplha, B, betha aplica la función 2, 3i y 3ii sobre ellos y añade los conjuntos a next para esa producción (Solucionar cuando queda pendiente un siguiente.)
-      //AL final retornar netx
-      //Creo que el algoritmo soluciona hasta cosas estrambotricas pero Dios proveera.
-    }
-  }
-}
-
-AQUI EMPIEZA EL CODIGO 
-
-
-function calculateFollow(gram, firstSets, nonTerminals) {
-  const startSymbol = nonTerminals[0];
-  let followSets = {};
-
-  // Inicializar el conjunto "siguiente" para cada no terminal
-  for (let nonTerminal of nonTerminals) {
-    followSets[nonTerminal] = new Set();
+class Follow {
+  constructor(grammar, firstSet) {
+    this.data = new Map();
+    this.generate(grammar, firstSet);
   }
 
-  // Añadir el símbolo "$" al conjunto siguiente del símbolo inicial
-  followSets[startSymbol].add("$");
+  
+  add(non_terminal, set) {
+    const existing_set = this.data.get(non_terminal) || new Set();
+    this.data.set(non_terminal, new Set([...existing_set, ...set]));
+  }
 
-  let changed = true;
-  while (changed) {
-    changed = false;
 
-    
-    // Itera sobre cada no terminal en la gramática
-    for (let A of Object.keys(gram.rightPart)) {
-    
-      let productions = gram.rightPart[A].productions;
+  get(non_terminal) {
+    const set = this.data.get(non_terminal);
+    if (!set) throw new Error(`Non-terminal '${non_terminal}' not found.`);
+    return set;
+  }
 
-      // Recorre las producciones de A
-      for (let production of productions) {
-        // Recorre los símbolos en cada producción
-        for (let i = 0; i < production.length; i++) {
-          let symbol = production[i];
-          let B;
 
-          // Si el símbolo contiene un apóstrofe, trata de leer el símbolo completo
-          if (symbol === "'" && i > 0) {
-            // Combina el apóstrofe con el símbolo anterior
-            production[i - 1] += symbol;
-            B = production[i - 1]; // Establece B correctamente al símbolo completo
-          } else {
-            // Procesa el símbolo como usualmente
-            B = symbol;
-          }
+  generate(grammar, firstSet) {
+    function _follow(non_terminal, stack = new Set()) {
+      stack.add(non_terminal);
+      let follow = new Set();
 
-          // Solo aplicamos reglas para no terminales
-          if (nonTerminals.includes(B)) {
-            let beta = production.slice(i + 1); // β es la parte después de B
+      grammar.rightPart.forEach((prod) => {
+        const header = prod.NTerm;
+        const body = prod.productions;
 
-            // Caso 1: Si hay algo después de B en la producción
-            if (beta.length > 0) {
-              let firstOfBeta = firstOfString(beta, firstSets);
+        for (let i = 0; i < body.length; i++) {
+          const symbol = body[i];
 
-              for (let symbol of firstOfBeta) {
-                if (symbol !== "&") {
-                  followSets[B].add(symbol);
-                  
-                }
-              }
+          if (symbol === non_terminal) {
+            const beta = body.slice(i + 1);
 
-              // Si "Primero(β)" contiene "&", añadir "Siguiente(A)" a "Siguiente(B)"
-              if (firstOfBeta.has("&")) {
-                for (let symbol of followSets[A]) {
-                  console.log(followSets[A])
-                  if (!followSets[B].has(symbol)) {
-                    followSets[B].add(symbol);
-                    changed = true;
-                  }
-                }
+            if (beta.length === 0 && !stack.has(header)) {
+              follow = new Set([...follow, ..._follow(header, stack)]);
+              if (header === "S") {
+                follow.add("$");
               }
             } else {
-              // Caso 2: Si no hay nada después de B, añadir "Siguiente(A)" a "Siguiente(B)"
-              for (let symbol of followSets[A]) {
-                if (!followSets[B].has(symbol)) {
-                  followSets[B].add(symbol);
-                  changed = true;
+              const firstBeta = beta.reduce(
+                (acc, symbol) => new Set([...acc, ...firstSet[symbol]]),
+                new Set()
+              );
+
+              follow = new Set([
+                ...follow,
+                ...[...firstBeta].filter((item) => item !== "&"),
+              ]);
+
+              if (firstBeta.has("&") && !stack.has(header)) {
+                follow = new Set([...follow, ..._follow(header, stack)]);
+                if (header === "S") {
+                  follow.add("$");
                 }
               }
             }
           }
         }
-      }
+      });
+
+      return follow;
     }
+
+    const S = "S";
+    this.add(S, new Set(["$"]));
+
+    grammar.rightPart.forEach((prod) => {
+      const non_terminal = prod.NTerm;
+      this.add(non_terminal, _follow(non_terminal));
+    });
   }
 
-  return followSets;
+  print() {
+    const table_data = Array.from(this.data.entries()).map(([key, value]) => ({
+      non_terminal: key,
+      follow: Array.from(value),
+    }));
+    console.table(table_data);
+  }
 }
 
-function firstOfString(str, firstSets) {
-  let firstSet = new Set();
-  let canBeEmpty = true;
+function splitProduction(grammar) {
+  let newProductions = {
+    rightPart: [],
+  };
 
-  for (let i = 0; i < str.length && canBeEmpty; i++) {
-    canBeEmpty = false;
-
-    if (!(str[i] >= "A" && str[i] <= "Z")) {
-      firstSet.add(str[i]);
-      break;
-    } else {
-      for (let f of firstSets[str[i]]) {
-        if (f !== "&") {
-          firstSet.add(f);
-        } else {
-          canBeEmpty = true;
+  grammar.rightPart.forEach((prod) => {
+    const { NTerm, productions } = prod;
+    if (productions.length > 0) {
+      productions.forEach((part) => {
+        // Dividir la cadena en caracteres y procesar
+        let i = 0;
+        const filteredPart = [];
+        while (i < part.length) {
+          // Si encontramos una letra mayúscula seguida de un apóstrofe, tratamos como un solo símbolo
+          if (i < part.length - 1 && part[i].match(/[A-Z]/) && part[i + 1] === "'") {
+            filteredPart.push(part[i] + "'");
+            i += 2; // Avanzamos 2 posiciones, ya que hemos procesado el par
+          } else {
+            filteredPart.push(part[i]);
+            i++; // Avanzamos 1 posición para el siguiente carácter
+          }
         }
-      }
-    }
-  }
 
-  if (canBeEmpty) {
-    firstSet.add("&");
-  }
-  return firstSet;
+        newProductions.rightPart.push({ NTerm, productions: filteredPart });
+      });
+    }
+  });
+
+  return newProductions;
 }
-*/
+
+
+let formattedStr = "";
+
+formattedStr = "S->Sid\r\nS->B\r\nB->(id)i\r\nB->&";
+let [terminales, noterminales, gramatica] = components(String(formattedStr));
+let nueva = leftRecursion(gramatica);
+let n2 = factorization(nueva);
+
+let [terminales2, noterminales2] = newcomponents(n2);
+
+console.log("Nueva gramatica")
+console.log(n2.rightPart);
+console.log("Terminales")
+console.log(terminales2);
+console.log("No terminales")
+console.log(noterminales2);
+console.log("Primeros")
+let first = calculateFirst(n2.rightPart);
+console.log(first);
+const newGrammar = splitProduction(n2);
+console.log("Siguientes")
+const follow = new Follow(newGrammar, first);
+console.log(follow)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
 
 function formatProductionsAsLists(rightPart) {
   const formattedProductions = [];
@@ -476,146 +495,11 @@ function formatFirstSetsAsLists(firstSets) {
   }
   return result;
 }
-
-
-// TABLA M -------------------------------------
-//primeros y producciones son objetos 
-function construirTablaM(producciones, primeros) {
-  let tablaM = {};
-
-  // Paso 1:Para cada producción A → α en la gramática
-  for (let produccion of producciones) {
-    const { NTerm, derivacion } = produccion;
-
-    // Aseguramos que la entrada de M para A existe
-    if (!tablaM[NTerm]) {
-      tablaM[NTerm] = {};
-    }
-
-    // Paso 2: Para cada terminal a en PRIMERO(α)
-    for (let simbolo of primeros[derivacion]) {
-      if (simbolo !== "&") {  // solo para confirmar q estamos en el paso 2 
-        // Añadir la producción A → α en M[A, a]
-        tablaM[NTerm][simbolo] = derivacion;
-      }
-    }
-  }
-
-  // Paso 4: Todas las demás entradas de M son errores
-  for (let noTerminal in tablaM) {
-    for (let terminal of Object.keys(primeros)) {
-      if (!tablaM[noTerminal][terminal]) {
-        tablaM[noTerminal][terminal] = "error";
-      }
-    }
-  }
-
-  return tablaM;
-}
-
-
-//Para reconoer una CADENAAAA
-
-function reconocerCadena(cadena, M, simboloInicial) {
-  const pila = ['$'];
-  pila.push(simboloInicial); //Meter el símbolo inicial en la pila
-  let apuntador = 0;
-
-  cadena += '$'; //Añadir '$' 
-
-  while (true) {
-      const X = pila[pila.length - 1]; //Símbolo en la cima de la pila
-      const a = cadena[apuntador];     //Símbolo apuntado en la cadena
-
-      if (esTerminal(X) || X === '$') { 
-          if (X === a) { //Si el símbolo de la pila coincide con el símbolo de la cadena
-              pila.pop(); //Extraer X de la pila
-              apuntador++; //Avanzar en la cadena
-          } else {
-              console.log("Error: símbolo de la cadena no coincide con la pila");
-              return false;
-          }
-      } else { // X es un no terminal
-          const produccion = M[X][a]; //Buscar la producción en la tabla M
-
-          if (produccion) { //Si hay una producción en M[X][a]
-              pila.pop(); //Extraer X de la pila
-
-              // Insertar los símbolos de la producción en orden inverso en la pila
-              for (let i = produccion.length - 1; i >= 0; i--) {
-                  if (produccion[i] !== 'ε') { // Ignorar producciones con epsilon
-                      pila.push(produccion[i]);
-                  }
-              }
-
-              console.log(`Usando la producción: ${X} -> ${produccion.join(' ')}`);
-          } else {
-              console.log("Error: no hay producción en M para el par (X, a)");
-              return false;
-          }
-      }
-
-      if (X === '$' && a === '$') { //Condición de aceptación
-          console.log("Cadena aceptada");
-          return true;
-      }
-  }
-}
-
-function esTerminal(simbolo) {
-  return !simbolo.match(/[A-Z]/); // Considera terminales como no mayúsculas
-}
-
-
-
-// Ejemplo de uso
-let str = 'S->Sid\r\nS->B\r\nB->(id)i\r\nB->&';
-let [terminals, nonTerminals, gramatica] = components(str);
-console.log("No terminales:", nonTerminals);
-console.log("Terminales:", terminals);
-
-let nueva = leftRecursion(gramatica);
-let n2 = factorization(nueva);
-for (let elemento of nueva.rightPart){
-  console.log(elemento)
-}
-let [terminales2, noterminales2] = newcomponents(n2);
-console.log(noterminales2)
-
-let firstSets = calculateFirst(n2.rightPart);
-console.log("Conjuntos PRIMERO:");
-for (let nterm in firstSets) {
-  console.log(`${nterm}:`, Array.from(firstSets[nterm]));
-}
-
-/*
-let followSets = calculateFollow(n2, firstSets,noterminales2);
-console.log("Conjuntos SIGUIENTE:");
-for (let nterm in followSets) {
-  console.log(`${nterm}:`, Array.from(followSets[nterm]));
-}
 */
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+/*
 // HACE PARTE DEL FRONT ESTOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO ----------------------------------------------------------------------------------
-
 
 
 let txt = ""; // Variable para almacenar el contenido del archivo
@@ -720,3 +604,4 @@ fileInput.addEventListener("change", function () {
     reader.readAsText(file);
   }
 });
+*/
