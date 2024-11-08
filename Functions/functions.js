@@ -430,6 +430,7 @@ function splitProduction(grammar) {
   return newProductions;
 }
 
+// Para la printeada 
 function convertFirstToArray(input) {
   let result = [];
   for (let nonTerminal in input) {
@@ -446,6 +447,8 @@ function convertFollowToArray(input) {
   return result;
 }
 
+//Para tabla M
+
 function convertFollowToObject(followData) {
   const result = {};
   followData.data.forEach((set, key) => {
@@ -454,6 +457,17 @@ function convertFollowToObject(followData) {
   return result;
 }
 
+function convertSetsToArrays(first) {
+  // Convertir FIRST
+  const firstAsArrays = {};
+  for (const [nonTerminal, set] of Object.entries(first)) {
+    firstAsArrays[nonTerminal] = Array.from(set);
+  }
+  return firstAsArrays; // Devolvemos el objeto convertido
+}
+
+
+// cada produccion en una linea (para tabla M)
 function splitProvarious(grammar) {
   let newProductions = {
     rightPart: [],
@@ -469,7 +483,8 @@ function splitProvarious(grammar) {
   return newProductions;
 }
 
-let tableM = {};
+let tableM = {}; //Tabla M
+
 function initializeTableM(nonTerminals, terminals) {
   nonTerminals.forEach((nonTerminal) => {
     tableM[nonTerminal] = {};
@@ -510,6 +525,8 @@ function getFirst(productions, firsts) {
   return [...new Set(result)];
 }
 
+
+
 let formattedStr = "";
 
 formattedStr = "S->Sid\r\nS->B\r\nB->(id)i\r\nB->&";
@@ -532,8 +549,14 @@ console.log("Siguientes");
 const follow = new Follow(newGrammar, first);
 console.log(convertFollowToArray(follow));
 const followsa = convertFollowToObject(follow);
+console.log("Siguientes para tabla M") //son los mismos de arriba pero con una estructura diferente 
+console.log(followsa)
+console.log("Primeros para tabla M") //son los mismos de arriba pero con una estructura diferente 
+firstnew = convertSetsToArrays(first)
+console.log(firstnew)
 initializeTableM(noterminales2, terminales2);
-buildTableM(splitProvarious(n2), first, followsa);
+buildTableM(splitProvarious(n2), firstnew, followsa);
+console.log("Tabla M");
 console.log(tableM);
 
 
