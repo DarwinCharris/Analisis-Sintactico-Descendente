@@ -250,6 +250,7 @@ function newcomponents(gram) {
   return [terminals, noTerminals];
 }
 
+
 function calculateFirst(rightPart) {
   let firstSets = {};
 
@@ -278,8 +279,7 @@ function calculateFirst(rightPart) {
           } else {
             canBeEmpty = true;
           }
-        } /* A -> B 
-                      B -> epsilon */
+        } // A -> B  -> epsilon 
         if (!canBeEmpty) {
           break;
         }
@@ -316,6 +316,8 @@ function calculateFirst(rightPart) {
   return firstSets;
 }
 
+
+/*
 function next(gram, first, Nterminales) {
   let initial = Nterminales[0];
   let alpha;
@@ -343,6 +345,119 @@ function next(gram, first, Nterminales) {
   }
 }
 
+AQUI EMPIEZA EL CODIGO 
+
+
+function calculateFollow(gram, firstSets, nonTerminals) {
+  const startSymbol = nonTerminals[0];
+  let followSets = {};
+
+  // Inicializar el conjunto "siguiente" para cada no terminal
+  for (let nonTerminal of nonTerminals) {
+    followSets[nonTerminal] = new Set();
+  }
+
+  // Añadir el símbolo "$" al conjunto siguiente del símbolo inicial
+  followSets[startSymbol].add("$");
+
+  let changed = true;
+  while (changed) {
+    changed = false;
+
+    
+    // Itera sobre cada no terminal en la gramática
+    for (let A of Object.keys(gram.rightPart)) {
+    
+      let productions = gram.rightPart[A].productions;
+
+      // Recorre las producciones de A
+      for (let production of productions) {
+        // Recorre los símbolos en cada producción
+        for (let i = 0; i < production.length; i++) {
+          let symbol = production[i];
+          let B;
+
+          // Si el símbolo contiene un apóstrofe, trata de leer el símbolo completo
+          if (symbol === "'" && i > 0) {
+            // Combina el apóstrofe con el símbolo anterior
+            production[i - 1] += symbol;
+            B = production[i - 1]; // Establece B correctamente al símbolo completo
+          } else {
+            // Procesa el símbolo como usualmente
+            B = symbol;
+          }
+
+          // Solo aplicamos reglas para no terminales
+          if (nonTerminals.includes(B)) {
+            let beta = production.slice(i + 1); // β es la parte después de B
+
+            // Caso 1: Si hay algo después de B en la producción
+            if (beta.length > 0) {
+              let firstOfBeta = firstOfString(beta, firstSets);
+
+              for (let symbol of firstOfBeta) {
+                if (symbol !== "&") {
+                  followSets[B].add(symbol);
+                  
+                }
+              }
+
+              // Si "Primero(β)" contiene "&", añadir "Siguiente(A)" a "Siguiente(B)"
+              if (firstOfBeta.has("&")) {
+                for (let symbol of followSets[A]) {
+                  console.log(followSets[A])
+                  if (!followSets[B].has(symbol)) {
+                    followSets[B].add(symbol);
+                    changed = true;
+                  }
+                }
+              }
+            } else {
+              // Caso 2: Si no hay nada después de B, añadir "Siguiente(A)" a "Siguiente(B)"
+              for (let symbol of followSets[A]) {
+                if (!followSets[B].has(symbol)) {
+                  followSets[B].add(symbol);
+                  changed = true;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return followSets;
+}
+
+function firstOfString(str, firstSets) {
+  let firstSet = new Set();
+  let canBeEmpty = true;
+
+  for (let i = 0; i < str.length && canBeEmpty; i++) {
+    canBeEmpty = false;
+
+    if (!(str[i] >= "A" && str[i] <= "Z")) {
+      firstSet.add(str[i]);
+      break;
+    } else {
+      for (let f of firstSets[str[i]]) {
+        if (f !== "&") {
+          firstSet.add(f);
+        } else {
+          canBeEmpty = true;
+        }
+      }
+    }
+  }
+
+  if (canBeEmpty) {
+    firstSet.add("&");
+  }
+  return firstSet;
+}
+*/
+
 function formatProductionsAsLists(rightPart) {
   const formattedProductions = [];
   for (let production of rightPart) {
@@ -362,20 +477,146 @@ function formatFirstSetsAsLists(firstSets) {
   return result;
 }
 
+
+// TABLA M -------------------------------------
+//primeros y producciones son objetos 
+function construirTablaM(producciones, primeros) {
+  let tablaM = {};
+
+  // Paso 1:Para cada producción A → α en la gramática
+  for (let produccion of producciones) {
+    const { NTerm, derivacion } = produccion;
+
+    // Aseguramos que la entrada de M para A existe
+    if (!tablaM[NTerm]) {
+      tablaM[NTerm] = {};
+    }
+
+    // Paso 2: Para cada terminal a en PRIMERO(α)
+    for (let simbolo of primeros[derivacion]) {
+      if (simbolo !== "&") {  // solo para confirmar q estamos en el paso 2 
+        // Añadir la producción A → α en M[A, a]
+        tablaM[NTerm][simbolo] = derivacion;
+      }
+    }
+  }
+
+  // Paso 4: Todas las demás entradas de M son errores
+  for (let noTerminal in tablaM) {
+    for (let terminal of Object.keys(primeros)) {
+      if (!tablaM[noTerminal][terminal]) {
+        tablaM[noTerminal][terminal] = "error";
+      }
+    }
+  }
+
+  return tablaM;
+}
+
+
+//Para reconoer una CADENAAAA
+
+function reconocerCadena(cadena, M, simboloInicial) {
+  const pila = ['$'];
+  pila.push(simboloInicial); //Meter el símbolo inicial en la pila
+  let apuntador = 0;
+
+  cadena += '$'; //Añadir '$' 
+
+  while (true) {
+      const X = pila[pila.length - 1]; //Símbolo en la cima de la pila
+      const a = cadena[apuntador];     //Símbolo apuntado en la cadena
+
+      if (esTerminal(X) || X === '$') { 
+          if (X === a) { //Si el símbolo de la pila coincide con el símbolo de la cadena
+              pila.pop(); //Extraer X de la pila
+              apuntador++; //Avanzar en la cadena
+          } else {
+              console.log("Error: símbolo de la cadena no coincide con la pila");
+              return false;
+          }
+      } else { // X es un no terminal
+          const produccion = M[X][a]; //Buscar la producción en la tabla M
+
+          if (produccion) { //Si hay una producción en M[X][a]
+              pila.pop(); //Extraer X de la pila
+
+              // Insertar los símbolos de la producción en orden inverso en la pila
+              for (let i = produccion.length - 1; i >= 0; i--) {
+                  if (produccion[i] !== 'ε') { // Ignorar producciones con epsilon
+                      pila.push(produccion[i]);
+                  }
+              }
+
+              console.log(`Usando la producción: ${X} -> ${produccion.join(' ')}`);
+          } else {
+              console.log("Error: no hay producción en M para el par (X, a)");
+              return false;
+          }
+      }
+
+      if (X === '$' && a === '$') { //Condición de aceptación
+          console.log("Cadena aceptada");
+          return true;
+      }
+  }
+}
+
+function esTerminal(simbolo) {
+  return !simbolo.match(/[A-Z]/); // Considera terminales como no mayúsculas
+}
+
+
+
+// Ejemplo de uso
+let str = 'S->Sid\r\nS->B\r\nB->(id)i\r\nB->&';
+let [terminals, nonTerminals, gramatica] = components(str);
+console.log("No terminales:", nonTerminals);
+console.log("Terminales:", terminals);
+
+let nueva = leftRecursion(gramatica);
+let n2 = factorization(nueva);
+for (let elemento of nueva.rightPart){
+  console.log(elemento)
+}
+let [terminales2, noterminales2] = newcomponents(n2);
+console.log(noterminales2)
+
+let firstSets = calculateFirst(n2.rightPart);
+console.log("Conjuntos PRIMERO:");
+for (let nterm in firstSets) {
+  console.log(`${nterm}:`, Array.from(firstSets[nterm]));
+}
+
+/*
+let followSets = calculateFollow(n2, firstSets,noterminales2);
+console.log("Conjuntos SIGUIENTE:");
+for (let nterm in followSets) {
+  console.log(`${nterm}:`, Array.from(followSets[nterm]));
+}
+*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // HACE PARTE DEL FRONT ESTOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO ----------------------------------------------------------------------------------
 
-// var arrayData = new Array();
-// var archivotxt = new XMLHttpRequest();
-// var fileRuta = 'data.txt';
-// archivotxt.open("GET",fileRuta, false);
-// archivotxt.send(null);
-// var txt = archivotxt.responseText;
-// for (var i=0; i< txt.length; i++){
-//     arrayData.push(txt[i]);
-// }
-// console.log(txt)
-// const lineas = txt.split('\r\n');
-// console.log(lineas)
+
 
 let txt = ""; // Variable para almacenar el contenido del archivo
 let formattedStr = "";
@@ -412,7 +653,7 @@ fileInput.addEventListener("change", function () {
       console.log(terminales2);
       console.log(noterminales2);
       console.log("Factorizada");
-      console.log(n2.rightPart);
+      console.log( n2.rightPart);
       let first = calculateFirst(n2.rightPart);
       for (const i in first) {
         console.log(i);
