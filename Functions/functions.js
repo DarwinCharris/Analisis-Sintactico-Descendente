@@ -252,176 +252,177 @@ function newcomponents(gram) {
 function customSplit(str) {
   const result = [];
   for (let i = 0; i < str.length; i++) {
-      if (str[i] === "'" && i > 0) {
-          result[result.length - 1] += str[i];
-      } else {
-          result.push(str[i]);
-      }
+    if (str[i] === "'" && i > 0) {
+      result[result.length - 1] += str[i];
+    } else {
+      result.push(str[i]);
+    }
   }
   return result;
 }
 
-function calculateFirst(rightPart) {
-  let firstSets = {};
-
-  // Inicializar el conjunto "primero" para cada no terminal
-  for (let produccion of rightPart) {
-    firstSets[produccion.NTerm] = new Set();
+function calculateFirst(gram, noTerminales) {
+  let first = {};
+  let pendiente = {};
+  for (let ter of gram.rightPart) {
+    first[ter.NTerm] = new Set();
+    pendiente[ter.NTerm] = new Set();
   }
-
-  // Función para calcular el primero de una cadena específica
-  function firstOfString(str) {
-    let firstSet = new Set();
-    let canBeEmpty = true;
-
-    for (let i = 0; i < str.length; i++) {
-      canBeEmpty = false;
-      if (!(str[i] >= "A" && str[i] <= "Z")) {
-        // Es un terminal de un solo carácter
-        firstSet.add(str[i]);
-        canBeEmpty = false;
-        break;
+  for (let termino of gram.rightPart) {
+    for (let prod of termino.productions) {
+      elemento = customSplit(prod);
+      if (noTerminales.includes(elemento[0])) {
+        pendiente[termino.NTerm].add(elemento[0]);
       } else {
-        // Es un no terminal
-        for (let f of firstSets[str[i]]) {
-          if (f !== "&") {
-            firstSet.add(f);
-          } else {
-            canBeEmpty = true;
-          }
-        } // A -> B  -> epsilon
-        if (!canBeEmpty) {
-          break;
-        }
+        first[termino.NTerm].add(elemento[0]);
       }
     }
-
-    if (canBeEmpty) {
-      firstSet.add("&");
-    }
-    return firstSet;
   }
-
-  // Calcular el conjunto primero de cada no terminal
-  let changed = true;
-  while (changed) {
-    changed = false;
-    for (let produccion of rightPart) {
-      let nterm = produccion.NTerm;
-      for (let production of produccion.productions) {
-        let beforeSize = firstSets[nterm].size;
-        let firstSetForProduction = firstOfString(production);
-
-        for (let f of firstSetForProduction) {
-          firstSets[nterm].add(f);
-        }
-
-        if (firstSets[nterm].size > beforeSize) {
-          changed = true;
+  for (let key in pendiente) {
+    if (pendiente[key] instanceof Set && pendiente[key].size === 0) {
+      for (let otherKey in pendiente) {
+        if (otherKey !== key && pendiente[otherKey].has(key)) {
+          first[key].forEach((val) => first[otherKey].add(val));
+          pendiente[otherKey].delete(key);
         }
       }
     }
   }
-  for (let grm of rightPart) {
+  //Arreglar el caso 3
+  for (let grm of gram.rightPart) {
     for (let prod of grm.productions) {
       let lista = customSplit(prod);
-      let i = 0;
-  
-      // Verificar que lista[0] tenga un conjunto de primeros en `firstSets`
-      if (firstSets[lista[0]] && (lista[0].length === 2 || (lista[i] >= "A" && lista[i] <= "Z"))) {
-        if (firstSets[lista[0]].has('&')) {
+      // Verificar que lista[0] tenga un conjunto de primeros en firstSets
+      if (
+        first[lista[0]] &&
+        (lista[0].length === 2 || (lista[i] >= "A" && lista[i] <= "Z"))
+      ) {
+        if (first[lista[0]].has("&")) {
           // Verificar que lista[1] también tenga un conjunto de primeros
-          if (firstSets[lista[1]] && (lista[1].length === 2 || (lista[i] >= "A" && lista[i] <= "Z"))) {
-            firstSets[lista[1]].forEach(valor => firstSets[grm.NTerm].add(valor));
+          if (
+            first[lista[1]] &&
+            (lista[1].length === 2 || (lista[i] >= "A" && lista[i] <= "Z"))
+          ) {
+            first[lista[1]].forEach((valor) => first[grm.NTerm].add(valor));
           } else if (lista[1]) {
-            firstSets[grm.NTerm].add(lista[1]);
+            first[grm.NTerm].add(lista[1]);
           }
         }
       }
     }
   }
-  
-  return firstSets;
+  return first;
 }
 
-class Follow {
-  constructor(grammar, firstSet) {
-    this.data = new Map();
-    this.generate(grammar, firstSet);
+function caso2(betha, b, prim, sig, terminales) {
+  if (terminales.includes(betha)) {
+    sig[b].add(betha);
+  } else {
+    prim[betha].forEach((val) => sig[b].add(val));
   }
-
-  add(non_terminal, set) {
-    const existing_set = this.data.get(non_terminal) || new Set();
-    this.data.set(non_terminal, new Set([...existing_set, ...set]));
+  return sig;
+}
+function caso3i(a, b, pendiente) {
+  pendiente[b].add(a);
+  return pendiente;
+}
+function caso3ii(a, b, betha, pendiente, prim, terminales) {
+  if (!terminales.includes(betha)) {
+    if (betha === "&") {
+      pendiente[b].add(a);
+    } else if (prim[betha].has("&")) {
+      pendiente[b].add(a);
+    }
   }
+  return pendiente;
+}
 
-  get(non_terminal) {
-    const set = this.data.get(non_terminal);
-    if (!set) throw new Error(`Non-terminal '${non_terminal}' not found.`);
-    return set;
+function Follow(gram, noterminales, terminales, primero) {
+  let sig = {};
+  let pendiente = {};
+  for (let elem of gram.rightPart) {
+    sig[elem.NTerm] = new Set();
+    pendiente[elem.NTerm] = new Set();
   }
-
-  generate(grammar, firstSet) {
-    function _follow(non_terminal, stack = new Set()) {
-      stack.add(non_terminal);
-      let follow = new Set();
-
-      grammar.rightPart.forEach((prod) => {
-        const header = prod.NTerm;
-        const body = prod.productions;
-
-        for (let i = 0; i < body.length; i++) {
-          const symbol = body[i];
-
-          if (symbol === non_terminal) {
-            const beta = body.slice(i + 1);
-
-            if (beta.length === 0 && !stack.has(header)) {
-              follow = new Set([...follow, ..._follow(header, stack)]);
-              if (header === "S") {
-                follow.add("$");
-              }
-            } else {
-              const firstBeta = beta.reduce(
-                (acc, symbol) => new Set([...acc, ...firstSet[symbol]]),
-                new Set()
+  sig[noterminales[0]].add("$");
+  for (let elem of gram.rightPart) {
+    for (let prod of elem.productions) {
+      let rev = customSplit(prod);
+      if (rev.length === 1) {
+        if (noterminales.includes(rev[0])) {
+          //Si solo tiene un elemento no terminal solo aplica el caso 3i
+          pendiente = caso3i(elem.NTerm, rev[0], pendiente);
+        }
+      } else if (rev.length === 2) {
+        if (noterminales.includes(rev[0])) {
+          sig = caso2(rev[1], rev[0], primero, sig, terminales);
+          pendiente = caso3ii(
+            elem.NTerm,
+            rev[0],
+            rev[1],
+            pendiente,
+            primero,
+            terminales
+          );
+        }
+        if (noterminales.includes(rev[1])) {
+          pendiente = caso3i(elem.NTerm, rev[1], pendiente);
+        }
+      } else {
+        //Caso 2 cuando alpha sea &
+        if (noterminales.includes(rev[0])) {
+          sig = caso2(rev[1], rev[0], primero, sig, terminales);
+        } else {
+          let cond = true;
+          let i = 0;
+          let j = 1;
+          let k = 2;
+          while (cond) {
+            let alpha = rev[i];
+            let b = rev[j];
+            let betha = rev[k];
+            if (noterminales.includes(b)) {
+              sig = caso2(betha, b, primero, sig, terminales);
+              pendiente = caso3ii(
+                elem.NTerm,
+                b,
+                betha,
+                pendiente,
+                primero,
+                terminales
               );
-
-              follow = new Set([
-                ...follow,
-                ...[...firstBeta].filter((item) => item !== "&"),
-              ]);
-
-              if (firstBeta.has("&") && !stack.has(header)) {
-                follow = new Set([...follow, ..._follow(header, stack)]);
-                if (header === "S") {
-                  follow.add("$");
-                }
-              }
+            }
+            i++;
+            j++;
+            k++;
+            if (k > rev.length - 1) {
+              cond = false;
             }
           }
         }
-      });
-
-      return follow;
+        //caso 3i solo es posible si el ultimo elemento es no terminales
+        if (noterminales.includes(rev[rev.length - 1])) {
+          pendiente = caso3i(elem.NTerm, rev[rev.length - 1], pendiente);
+        }
+      }
     }
-
-    const S = "S";
-    this.add(S, new Set(["$"]));
-
-    grammar.rightPart.forEach((prod) => {
-      const non_terminal = prod.NTerm;
-      this.add(non_terminal, _follow(non_terminal));
-    });
   }
-
-  print() {
-    const table_data = Array.from(this.data.entries()).map(([key, value]) => ({
-      non_terminal: key,
-      follow: Array.from(value),
-    }));
-    console.table(table_data);
+  //Administrar los pendientes
+  for (let key in pendiente) {
+    if (pendiente[key] instanceof Set && pendiente[key].size === 0) {
+      for (let otherKey in pendiente) {
+        if (otherKey !== key && pendiente[otherKey].has(key)) {
+          sig[key].forEach((val) => sig[otherKey].add(val));
+          //Agregar el elemento que tenía pendiente
+          pendiente[otherKey].delete(key);
+        }
+      }
+    }
   }
+  for (let key in sig) {
+    sig[key].delete("&");
+  }
+  return sig;
 }
 
 function splitProduction(grammar) {
@@ -480,9 +481,11 @@ function convertFollowToArray(input) {
 
 function convertFollowToObject(followData) {
   const result = {};
-  followData.data.forEach((set, key) => {
-    result[key] = Array.from(set);
-  });
+  for (const key in followData) {
+    if (followData.hasOwnProperty(key)) {
+      result[key] = Array.from(followData[key]);
+    }
+  }
   return result;
 }
 
@@ -553,7 +556,7 @@ function getFirst(productions, firsts) {
   return [...new Set(result)];
 }
 
-// para reconcimiento 
+// para reconcimiento
 function printstack(stack) {
   let str = "";
   for (let i = 0; i < stack.length; i++) {
@@ -634,7 +637,7 @@ function parse(input, M) {
     // Alinear la pila y la entrada
     let stackString = printstack(stack);
     let alignedStep = `${stackString.padEnd(20)} ${input.padEnd(20)}`;
-    
+
     // Mostrar la alineación
     printStep(alignedStep);
 
@@ -684,14 +687,6 @@ function parse(input, M) {
   return "Cadena no aceptada.";
 }
 
-
-
-
-
-
-
-
-
 // Función para verificar si un símbolo es terminal
 function isTerminal(symbol) {
   return !/[A-Z]/.test(symbol);
@@ -732,8 +727,6 @@ console.log("Reconocer cadena");
 console.log(parse("(id)i", tableM));
 */
 
-
-
 function formatProductionsAsLists(rightPart) {
   const formattedProductions = [];
   for (let production of rightPart) {
@@ -752,8 +745,6 @@ function formatFirstSetsAsLists(firstSets) {
   }
   return result;
 }
-
-
 
 // HACE PARTE DEL FRONT ESTOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO ----------------------------------------------------------------------------------
 let txt = ""; // Variable para almacenar el contenido del archivo
@@ -791,8 +782,8 @@ fileInput.addEventListener("change", function () {
       console.log(terminales2);
       console.log(noterminales2);
       console.log("Factorizada");
-      console.log( n2.rightPart);
-      let first = calculateFirst(n2.rightPart);
+      console.log(n2.rightPart);
+      let first = calculateFirst(n2, noterminales2);
       for (const i in first) {
         console.log(i);
         console.log(first[i]);
@@ -853,32 +844,38 @@ fileInput.addEventListener("change", function () {
           .join(" ,")} }\n`;
       });
       document.getElementById("formattedFirstSets").textContent =
-      formattedFirstSetsText;
+        formattedFirstSetsText;
 
       //SIGUIENTESSSSSSSSSSSSSSSSSSSSSSSSSS
-
-      console.log("Siguientes");
       const newGrammar = splitProduction(n2);
-      const follow = new Follow(newGrammar, first);
+      const follow = Follow(newGrammar, noterminales2, terminales2, first);
+      console.log("Siguientes");
+      console.log(follow);
       const followsa = convertFollowToObject(follow);
-      
       // Mostrar el conjunto de "Follow" en la página
       let formattedFollowSetsText = "";
       for (const [nonTerminal, followSet] of Object.entries(followsa)) {
-        formattedFollowSetsText += `Siguiente(${nonTerminal}) = { ${Array.from(followSet).join(", ")} }\n`;
-      }      
-      document.getElementById("formattedFollowSets").textContent = formattedFollowSetsText;
+        formattedFollowSetsText += `Siguiente(${nonTerminal}) = { ${Array.from(
+          followSet
+        ).join(", ")} }\n`;
+      }
+      document.getElementById("formattedFollowSets").textContent =
+        formattedFollowSetsText;
 
       //TABLA MMMMMMMMMMMM
       // Obtener terminales y no terminales
       // Agregar explícitamente el símbolo $ a la lista de terminales si no está presente
-      if (!terminales2.includes('$')) {
-        terminales2.push('$');
+      if (!terminales2.includes("$")) {
+        terminales2.push("$");
       }
 
       // Inicializar la tabla M con los no terminales y terminales
       initializeTableM(noterminales2, terminales2);
-      buildTableM(splitProvarious(n2), convertSetsToArrays(first), convertFollowToObject(follow));
+      buildTableM(
+        splitProvarious(n2),
+        convertSetsToArrays(first),
+        convertFollowToObject(follow)
+      );
 
       // Obtener la referencia de la tabla HTML
       const tableMElement = document.getElementById("tableM");
@@ -886,68 +883,72 @@ fileInput.addEventListener("change", function () {
 
       // Crear encabezados de columna (terminales), incluyendo $
       let headerRow = "<th>N / T</th>";
-      terminales2.forEach(terminal => {
+      terminales2.forEach((terminal) => {
         headerRow += `<th>${terminal}</th>`;
       });
-      tableMElement.querySelector("thead").innerHTML =`<tr>${headerRow}</tr>`;
+      tableMElement.querySelector("thead").innerHTML = `<tr>${headerRow}</tr>`;
 
       // Llenar la tabla con las filas (no terminales)
-      noterminales2.forEach(nonTerminal => {
+      noterminales2.forEach((nonTerminal) => {
         let row = `<tr><td>${nonTerminal}</td>`; // Primera columna con el no terminal
-        terminales2.forEach(terminal => {
+        terminales2.forEach((terminal) => {
           // Obtener la producción para cada no terminal y terminal
-          const production = tableM[nonTerminal] && tableM[nonTerminal][terminal] ? tableM[nonTerminal][terminal] : "";
-          row +=  `<td>${production}</td>`;
+          const production =
+            tableM[nonTerminal] && tableM[nonTerminal][terminal]
+              ? tableM[nonTerminal][terminal]
+              : "";
+          row += `<td>${production}</td>`;
         });
         row += `</tr>`;
         tableBody.innerHTML += row; // Agregar la fila a la tabla
       });
 
-
       //PA EL ALGORITMO
       // Evento para el botón de "submit"
-      document.getElementById("submitButton").addEventListener("click", function() {
-        const input = document.getElementById("cadena").value;
-    
-        if (!input) {
+      document
+        .getElementById("submitButton")
+        .addEventListener("click", function () {
+          const input = document.getElementById("cadena").value;
+
+          if (!input) {
             alert("Por favor ingrese una cadena.");
             return;
-        }
-    
-        // Llamar a la función parse con el valor de la entrada
-        const result = parse(input, tableM);
-    
-        // Limpiar y mostrar el resultado
-        const resultContainer = document.getElementById("resultContainer");
-        resultContainer.innerHTML = ""; // Limpiar el contenedor de resultados
-        const resultText = document.createElement("p");
-        resultText.textContent = result;
-        resultText.style.fontWeight = "bold";
-        resultText.style.color = result.includes("aceptada") ? "green" : "red";
-        resultContainer.appendChild(resultText);
-    });
-    
-    // Evento para el botón de "reset"
-    document.getElementById("resetButton").addEventListener("click", function() {
-        // Limpiar el campo de entrada
-        document.getElementById("cadena").value = "";
-    
-        // Limpiar los contenedores de pasos y resultados
-        document.getElementById("stepsContainer").innerHTML = "";
-        document.getElementById("resultContainer").innerHTML = "";
-    
-        // También puedes añadir estilos para resetear el formato visual si es necesario
-        // Ejemplo: Resetear colores, tamaños o clases
-        const stepsContainer = document.getElementById("stepsContainer");
-        const resultContainer = document.getElementById("resultContainer");
-    
-        stepsContainer.style = ""; // Restaurar estilo de contenedor de pasos
-        resultContainer.style = ""; // Restaurar estilo de contenedor de resultados
-    });
-    
-      
+          }
 
-    
+          // Llamar a la función parse con el valor de la entrada
+          const result = parse(input, tableM);
+
+          // Limpiar y mostrar el resultado
+          const resultContainer = document.getElementById("resultContainer");
+          resultContainer.innerHTML = ""; // Limpiar el contenedor de resultados
+          const resultText = document.createElement("p");
+          resultText.textContent = result;
+          resultText.style.fontWeight = "bold";
+          resultText.style.color = result.includes("aceptada")
+            ? "green"
+            : "red";
+          resultContainer.appendChild(resultText);
+        });
+
+      // Evento para el botón de "reset"
+      document
+        .getElementById("resetButton")
+        .addEventListener("click", function () {
+          // Limpiar el campo de entrada
+          document.getElementById("cadena").value = "";
+
+          // Limpiar los contenedores de pasos y resultados
+          document.getElementById("stepsContainer").innerHTML = "";
+          document.getElementById("resultContainer").innerHTML = "";
+
+          // También puedes añadir estilos para resetear el formato visual si es necesario
+          // Ejemplo: Resetear colores, tamaños o clases
+          const stepsContainer = document.getElementById("stepsContainer");
+          const resultContainer = document.getElementById("resultContainer");
+
+          stepsContainer.style = ""; // Restaurar estilo de contenedor de pasos
+          resultContainer.style = ""; // Restaurar estilo de contenedor de resultados
+        });
     };
     reader.readAsText(file);
   }
