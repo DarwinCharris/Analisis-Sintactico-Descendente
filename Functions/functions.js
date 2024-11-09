@@ -322,23 +322,25 @@ function calculateFirst(rightPart) {
       }
     }
   }
-  //Hacer lo de los primeros con E.
-  for (let grm of rightPart){
-    for (let prod of grm.productions){
-      let lista =customSplit(prod)
-      if(lista[0].length ===2 || (lista[i] >= "A" && lista[i] <= "Z")){
-        if(firstSets[lista[0]].has('&')){
-          if(lista[1].length ===2 || (lista[i] >= "A" && lista[i] <= "Z")){
+  for (let grm of rightPart) {
+    for (let prod of grm.productions) {
+      let lista = customSplit(prod);
+      let i = 0;
+  
+      // Verificar que lista[0] tenga un conjunto de primeros en `firstSets`
+      if (firstSets[lista[0]] && (lista[0].length === 2 || (lista[i] >= "A" && lista[i] <= "Z"))) {
+        if (firstSets[lista[0]].has('&')) {
+          // Verificar que lista[1] también tenga un conjunto de primeros
+          if (firstSets[lista[1]] && (lista[1].length === 2 || (lista[i] >= "A" && lista[i] <= "Z"))) {
             firstSets[lista[1]].forEach(valor => firstSets[grm.NTerm].add(valor));
-          }else{
-            firstSets[grm.NTerm].add([lista[1]])
+          } else if (lista[1]) {
+            firstSets[grm.NTerm].add(lista[1]);
           }
-          
         }
       }
     }
   }
-
+  
   return firstSets;
 }
 
@@ -621,7 +623,7 @@ function isTerminal(symbol) {
 
 let formattedStr = "";
 // NO BORRAR NINGUN CONSOLE 
-formattedStr = "S->Bid\r\nS->B\r\nB->(id)i\r\nB->&";
+formattedStr = "S->S,T\r\nS->T\r\nT->id\r\nT->id(S)";
 let [terminales, noterminales, gramatica] = components(String(formattedStr));
 let nueva = leftRecursion(gramatica);
 let n2 = factorization(nueva);
