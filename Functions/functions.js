@@ -588,7 +588,7 @@ function parse(input, M) {
       if (X === a) {
         input = input.slice(1); // Avanzamos en la cadena de entrada
       } else {
-        console.error("Error: el símbolo no coincide.");
+        console.error("Cadena no aceptada");
         return;
       }
     } else {
@@ -597,7 +597,7 @@ function parse(input, M) {
       console.log("");
       console.log(production);
       console.log("");
-      if (production !== null) {
+      if (production !== null && production !== undefined) {
         const [left, right] = production.split("->");
         if (right !== "&") {
           for (let i = right.length - 1; i >= 0; i--) {
@@ -610,12 +610,11 @@ function parse(input, M) {
           }
         }
       } else {
-        console.error("Error: no hay producción en la tabla para este par.");
+        console.error("Cadena no aceptada");
         return;
       }
     }
   }
-  console.log("Cadena no aceptada.");
 }
 
 function parse(input, M) {
@@ -643,6 +642,7 @@ function parse(input, M) {
 
     let X = stack.pop();
     let a = input[0];
+    
 
     if (X === "'") {
       if (stack.length >= 2) {
@@ -651,19 +651,21 @@ function parse(input, M) {
     }
 
     if (X === "$" && a === "$") {
-      return "Cadena aceptada.";
+      return "Cadena aceptada";
     }
 
     if (isTerminal(X) || X === "$") {
       if (X === a) {
         input = input.slice(1);
       } else {
-        return "Error: el símbolo no coincide.";
+        return "Cadena no aceptada";
       }
     } else {
       const production = M[X][a];
       printStep(""); // Vacío entre pasos
-      printStep(`Producción: ${production}`);
+      if (production !== null){
+        printStep(`Producción: ${production}`);
+      }
       printStep(""); // Vacío entre pasos
 
       if (production !== null) {
@@ -679,12 +681,12 @@ function parse(input, M) {
           }
         }
       } else {
-        return "Error: no hay producción en la tabla para este par.";
+        return "Cadena no aceptada";
       }
     }
   }
 
-  return "Cadena no aceptada.";
+  return "Cadena no aceptada";
 }
 
 // Función para verificar si un símbolo es terminal
@@ -692,40 +694,6 @@ function isTerminal(symbol) {
   return !/[A-Z]/.test(symbol);
 }
 
-/*
-let formattedStr = "";
-// NO BORRAR NINGUN CONSOLE 
-formattedStr = "S->S,T\r\nS->T\r\nT->id\r\nT->id(S)";
-let [terminales, noterminales, gramatica] = components(String(formattedStr));
-let nueva = leftRecursion(gramatica);
-let n2 = factorization(nueva);
-let [terminales2, noterminales2] = newcomponents(n2);
-console.log("Nueva gramatica");
-console.log(n2.rightPart);
-console.log("Terminales");
-console.log(terminales2);
-console.log("No terminales");
-console.log(noterminales2);
-console.log("Primeros");
-let first = calculateFirst(n2.rightPart);
-console.log(convertFirstToArray(first));
-const newGrammar = splitProduction(n2);
-console.log("Siguientes");
-const follow = new Follow(newGrammar, first);
-console.log(convertFollowToArray(follow));
-const followsa = convertFollowToObject(follow);
-console.log("Siguientes para tabla M"); //son los mismos de arriba pero con una estructura diferente
-console.log(followsa);
-console.log("Primeros para tabla M"); //son los mismos de arriba pero con una estructura diferente
-firstnew = convertSetsToArrays(first);
-console.log(firstnew);
-initializeTableM(noterminales2, terminales2);
-buildTableM(splitProvarious(n2), firstnew, followsa);
-console.log("Tabla M");
-console.log(tableM);
-console.log("Reconocer cadena");
-console.log(parse("(id)i", tableM));
-*/
 
 function formatProductionsAsLists(rightPart) {
   const formattedProductions = [];
@@ -746,7 +714,29 @@ function formatFirstSetsAsLists(firstSets) {
   return result;
 }
 
-// HACE PARTE DEL FRONT ESTOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO ----------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// F R O N T   E N  D  ----------------------------------------------------------------------------------
 let txt = ""; // Variable para almacenar el contenido del archivo
 let formattedStr = "";
 const fileInput = document.getElementById("fileInput");
@@ -790,7 +780,7 @@ fileInput.addEventListener("change", function () {
       }
 
       let formattedData = formatProductionsAsLists(n2.rightPart);
-      let formattedProductionsText = "Producciones:\n";
+      let formattedProductionsText = "";
       formattedData.forEach((item) => {
         formattedProductionsText += `${item[0]} -> ${item
           .slice(1)
@@ -848,7 +838,7 @@ fileInput.addEventListener("change", function () {
 
       //SIGUIENTESSSSSSSSSSSSSSSSSSSSSSSSSS
       const newGrammar = splitProduction(n2);
-      const follow = Follow(newGrammar, noterminales2, terminales2, first);
+      const follow = Follow(n2, noterminales2, terminales2, first);
       console.log("Siguientes");
       console.log(follow);
       const followsa = convertFollowToObject(follow);
@@ -924,9 +914,9 @@ fileInput.addEventListener("change", function () {
           const resultText = document.createElement("p");
           resultText.textContent = result;
           resultText.style.fontWeight = "bold";
-          resultText.style.color = result.includes("aceptada")
-            ? "green"
-            : "red";
+          resultText.style.color = result.includes("no")
+            ? "red"
+            : "green";
           resultContainer.appendChild(resultText);
         });
 

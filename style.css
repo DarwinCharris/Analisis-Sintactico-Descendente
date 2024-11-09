@@ -1,327 +1,311 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Quicksand:wght@300..700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Cutive+Mono&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Quicksand:wght@300..700&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap');  
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Quicksand:wght@300..700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Cutive+Mono&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Quicksand:wght@300..700&family=Source+Sans+3:ital,wght@0,200..900;1,200..900&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap");
 
 body {
-    font-family: "Quicksand", sans-serif;
-    background-color: #e8e6e6;
-    color: black;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-weight: 400;
+  font-style: normal;
 }
 
 h1 {
-    color: black;
-    text-align: center;
+  color: black;
+  text-align: center;
 }
 
 h2 {
-    margin-top: 9px;
-    color: black;
-    
+  font-size: larger;
+  color: black;
+  margin: 0px;
 }
 
 #customButton {
-    padding: 8px 10px;
-    background-color: black;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    height: 40px;
-    font-family: "Quicksand", sans-serif;
+  padding: 8px 10px;
+  background-color: black;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  height: 40px;
+  font-family: "Plus Jakarta Sans", sans-serif;
 }
 
 #customButton:hover {
-    background-color: #828282;
+  background-color: #828282;
 }
 
 #fileInput {
-    opacity: 0;
-    position: absolute;
-    z-index: -1;
+  opacity: 0;
+  position: absolute;
+  z-index: -1;
 }
 
 .txt {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 40px;
-    gap: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  gap: 15px;
 }
-
 .string,
 .container-input {
-    background-color: #fff;
-    width: 950px;
-    border-radius: 5px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    padding: 20px;
+  background-color: #fff;
+  margin: 6px;
+  width: 950px;
+  border-radius: 6px; 
+  border: 1px solid rgba(194, 194, 194, 0.776); 
+  padding: 10px;
+  box-shadow: 0 2px 4px rgba(236, 235, 235, 0.936); 
 }
 
+
 .container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  margin-top: 20px;
 }
 
 .container-input {
-    display: flex;
-    flex-direction: column;
-    margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  margin-top: 20px;
 }
 
-.container-cadena {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    padding: 10px;
-    max-width: 900px;
-    margin: 0 auto;
+.container-cadena{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 10px;
+  max-width: 900px;
+  margin: 0 auto;
 }
 
 .container-cadena input[type="text"] {
-    font-family: "Quicksand", sans-serif;
-    font-size: 12px;
-    width: 100%;
-    max-width: 500px;
-    margin-right: 10px;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 12px;
+  width: 100%;
+  max-width: 500px;
+  margin-right: 10px;
 }
 
 #cadena {
-    padding: 10px;
-    border-radius: 5px;
-    border: 1px solid #ced4da;
-    transition: background-color 0.3s ease, border-color 0.3s ease;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ced4da;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 #cadena::placeholder {
-    color: #6c757d;
+  color: #6c757d;
 }
 
 #submitButton,
 #resetButton {
-    padding: 8px 10px;
-    background-color: #000000;
-    font-family: "Quicksand", sans-serif;
-    color: white;
-    border: none;
-    font-size: 12px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.3s ease;
+  padding: 8px 10px;
+  background-color: #000000;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  color: white;
+  border: none;
+  font-size: 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
 #submitButton {
-    margin-right: 5px;
+  margin-right: 5px;
 }
 
 #submitButton:hover,
 #resetButton:hover {
-    transform: scale(1.01);
-    background-color: #828282;
+  transform: scale(1.01);
+  background-color: #828282;
 }
 
-#fileContent, #formattedProductions {
-    color: #000000;
-    font-size: large;
-    font-family:  "Cutive Mono", monospace;
-    background-color: #f4f4f4;
-    padding: 10px;
-    border-radius: 5px;
-    border: 1px solid #ddd;
-    overflow-x: auto; 
-    color: #000000;
-    font-size:x-large;
-    box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.3);
-    font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+#fileContent,
+#formattedProductions {
+  color: #000000;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  padding: 10px;
+  overflow-x: auto;
+  font-size: medium;
+  background-color: rgb(243 244 246 / var(--tw-bg-opacity));
 }
-
+#formattedProductions {
+  border-radius: 5px;
+  --tw-bg-opacity: 1;
+  background-color: rgb(243 244 246 / var(--tw-bg-opacity));
+}
 .string {
-    margin-top: 20px;
+  margin-top: 20px;
 }
-
 
 #submitButton:hover,
 #resetButton:hover {
-    transform: scale(1.01); 
-    background-color: #828282;
+  transform: scale(1.01);
+  background-color: #828282;
 }
 
 
-.string{
-    margin-top: 20px;
+.gramatica,
+.algoritmos {
+  display: flex;
+  justify-content: space-around;
+  gap: 30px;
 }
 
-.gramatica, .algoritmos{
-    display: flex;
-    justify-content: space-around;
-    gap: 30px;
+#T,
+#N,
+#P,
+#S {
+  background-color: #f8f8f8f7;
+  padding: 20px;
+  border-radius: 5px;
+  overflow-x: auto;
+  width: 500px;
+  --tw-bg-opacity: 1;
+  background-color: rgb(243 244 246 / var(--tw-bg-opacity));
+  margin-bottom: 25px;
 }
 
-#T, #N, #P, #S{
-    color: #000000;
-    font-size: large;
-    font-family:  "Cutive Mono", monospace;
-    background-color: #f4f4f4;
-    padding: 20px;
-    border-radius: 5px;
-    border: 1px solid #ddd;
-    overflow-x: auto; 
-    width: 500px;
-    box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.3);
-    margin-bottom: 25px;
-}
-#terminales, #noterminales, #formattedFirstSets, #formattedFollowSets{
-    color: #000000;
-    font-family:  "Cutive Mono", monospace;
-    padding: 10px;
-    font-size: x-large;
-    font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+#terminales,
+#noterminales,
+#formattedFirstSets,
+#formattedFollowSets {
+  font-family: "Plus Jakarta Sans", sans-serif;
+  padding: 10px;
+  color: #000000;
+  font-size: medium;
 }
 
-#T h2, #N h2 {
-    font-weight: 900 !important; 
-}
 
-#tableM{
-    gap: 30px;
+#tableM {
+  gap: 30px;
 }
 
 table {
-    width: 100%;
-    border-collapse: separate; /* Usamos 'separate' para añadir espacio entre las celdas */
-    border-spacing: 10px; /* Espacio entre las filas y columnas */
-    font-family: Arial, sans-serif;
-    font-size: 16px;
-  }
+  width: 100%;
+  border-collapse: separate; /* Usamos 'separate' para añadir espacio entre las celdas */
+  border-spacing: 10px; /* Espacio entre las filas y columnas */
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 16px;
+}
 
-  
-  td, th {
-    border: 1px solid #ddd; /* Bordes suaves */
-    padding: 12px; /* Espacio dentro de las celdas */
-    text-align: center; /* Centrar texto */
-  }
+td {
+  border: 1px solid #ddd; 
+}
+td,
+th {
+  padding: 12px;
+  text-align: center; 
+}
 
-  
-  th {
-    background-color: #f2f2f2; 
-    font-weight: bold; 
-  }
+th {
+  background-color: #f2f2f2;
+  font-weight: bold;
+}
 
+td {
+  min-width: 80px;
+}
 
-  td {
-    min-width: 80px;
-  }
+tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
 
+tr:nth-child(odd) {
+  background-color: #ffffff;
+}
 
-  tr:nth-child(even) {
-    background-color: #f9f9f9;
-  }
+table {
+  margin: 20px auto;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
 
-  tr:nth-child(odd) {
-    background-color: #ffffff;
-  }
-
-
-  table {
-    margin: 20px auto;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  }
-
-
-  tbody {
-    line-height: 1.8; 
-  }
+tbody {
+  line-height: 1.8;
+}
 
 
-  .steps-container {
-    max-width: 600px;
-    margin: 20px auto;
-    text-align: left;
-    border-radius: 10px;
-    padding: 20px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  }
-  
-  .steps-container p {
-    line-height: 1.4;
-    margin: 10px 0;
-    padding: 7px;
-    border-bottom: 1px solid #e0e0e0;
-  }
-  
-  .steps-container p:last-child {
-    border-bottom: none;
-  }
+.container-steps-result{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 10px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+.steps-container {
+  max-width: 600px;
+  margin: 20px auto;
+  text-align: left;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
 
-  .result-container p {
-    font-size:15px; /* Reducido desde 26px */
-    font-weight: bold;
-    margin-top: 20px;
-  }
-  .result-container.accepted {
-    color: green;
-  }
-  
-  .result-container.rejected {
-    color: red;
-  }
+.steps-container p {
+  line-height: 1.4;
+  margin: 10px 0;
+  padding: 7px;
+  border-bottom: 1px solid #e0e0e0;
+}
 
-  #stepsContainer pre {
-    font-family: monospace; /* Esto asegura que los caracteres se alineen */
-    font-size: 20px; /* Aumentar el tamaño de la fuente */
-    line-height: 1.5; /* Mejorar la legibilidad */
-    margin: 10px 0; /* Espaciado entre pasos */
-    word-wrap: break-word; /* Permitir que las palabras largas se ajusten al final de la línea */
-  }
-  #stepsContainer .step {
-    font-family: monospace;
-    font-size: 20px;
-    line-height: 1.5;
-    margin: 10px 0;
-    display: flex;  /* Usamos flexbox para organizar los elementos en una fila */
-    justify-content: flex-start;  /* Alinear todo al principio */
-    align-items: center;  /* Centrar los elementos verticalmente */
-    word-wrap: break-word;
-  }
-  
-  #stepsContainer .stack,
-  #stepsContainer .input,
-  #stepsContainer .production {
-    margin-right: 20px;  /* Espaciado entre los elementos */
-  }
-  
-  #stepsContainer .stack {
-    font-weight: bold;
-  }
-  
-  #stepsContainer .production {
-    font-style: italic;
-    color: #555; /* Gris claro para las producciones */
-  }
-  
-  #stepsContainer {
-    background-color: #f5f5f5;
-    border: 1px solid #ddd;
-    padding: 15px;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  }
-  
-  #resultContainer {
-    font-size: 24px;
-    font-weight: bold;
-    color: green; 
-    margin-top: 20px;
-  }
-  
-  #errorContainer {
-    font-size: 24px;
-    font-weight: bold;
-    color: red;
-    margin-top: 20px;
-  }
-  
+.steps-container p:last-child {
+  border-bottom: none;
+}
+
+
+#stepsContainer pre {
+  font-family: "Plus Jakarta Sans", sans-serif; 
+  font-size: 20px; 
+  line-height: 1.5; 
+  margin: 10px 0; 
+  word-wrap: break-word; 
+}
+#stepsContainer .step {
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  margin: 10px 0;
+  display: flex; 
+  justify-content: flex-start; 
+  align-items: center; 
+  word-wrap: break-word;
+}
+
+#stepsContainer .stack,
+#stepsContainer .input,
+#stepsContainer .production {
+  margin-right: 20px; 
+}
+
+#stepsContainer .stack {
+  font-weight: bold;
+}
+
+#stepsContainer .production {
+  font-style: italic;
+  color: #555; 
+}
+
+#stepsContainer {
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  padding: 15px;
+  width: 100%;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+#result-container p {
+  font-size: 20px; 
+  font-weight: bold;
+}
+
