@@ -1,4 +1,3 @@
-S->Bid
-S->B
-B->(id)i
-B->&
+S->A;S
+S->A
+A->a

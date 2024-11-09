@@ -615,12 +615,84 @@ function parse(input, M) {
   console.log("Cadena no aceptada.");
 }
 
+function parse(input, M) {
+  // Referencias a los elementos del DOM
+  const stepsContainer = document.getElementById("stepsContainer");
+  const resultContainer = document.getElementById("resultContainer");
+
+  // Limpiar los contenedores antes de empezar
+  stepsContainer.innerHTML = "";
+  resultContainer.innerHTML = "";
+
+  let stack = ["$", "S"];
+  input += "$"; // Agregamos el símbolo de fin de cadena a la entrada
+
+  // Función para mostrar cada paso con estilos grandes
+  function printStep(step) {
+    const stepElement = document.createElement("p");
+    stepElement.textContent = step;
+    stepElement.style.fontSize = "24px"; // Aumentar tamaño de letra
+    stepElement.style.marginBottom = "10px";
+    stepElement.style.whiteSpace = "pre"; // Mantener espacios en blanco
+    stepsContainer.appendChild(stepElement);
+  }
+
+  // Ciclo para el análisis de la cadena
+  while (stack.length > 0) {
+    printStep(`${printstack(stack)}         ${input}`);
+
+    let X = stack.pop();
+    let a = input[0];
+
+    if (X === "'") {
+      if (stack.length >= 2) {
+        X = stack.pop() + X;
+      }
+    }
+
+    // Verificar si hemos alcanzado el fin de la cadena
+    if (X === "$" && a === "$") {
+      return "Cadena aceptada.";
+    }
+
+    if (isTerminal(X) || X === "$") {
+      if (X === a) {
+        input = input.slice(1);
+      } else {
+        return "Cadena no aceptada: el símbolo no coincide.";
+      }
+    } else {
+      const production = M[X][a];
+      if (production !== null) {
+        printStep(`Producción: ${production}`);
+        const [left, right] = production.split("->");
+        if (right !== "&") {
+          for (let i = right.length - 1; i >= 0; i--) {
+            if (right[i] === "'") {
+              stack.push(right[i - 1] + right[i]);
+              i--;
+            } else {
+              stack.push(right[i]);
+            }
+          }
+        }
+      } else {
+        return "Cadena no aceptada: no hay producción en la tabla para este par.";
+      }
+    }
+  }
+
+  return "Cadena no aceptada.";
+}
+
+
+
 // Función para verificar si un símbolo es terminal
 function isTerminal(symbol) {
   return !/[A-Z]/.test(symbol);
 }
 
-
+/*
 let formattedStr = "";
 // NO BORRAR NINGUN CONSOLE 
 formattedStr = "S->S,T\r\nS->T\r\nT->id\r\nT->id(S)";
@@ -653,15 +725,9 @@ console.log("Tabla M");
 console.log(tableM);
 console.log("Reconocer cadena");
 console.log(parse("(id)i", tableM));
+*/
 
 
-
-
-
-
-
-
-/*
 
 function formatProductionsAsLists(rightPart) {
   const formattedProductions = [];
@@ -681,12 +747,10 @@ function formatFirstSetsAsLists(firstSets) {
   }
   return result;
 }
-*/
 
-/*
+
+
 // HACE PARTE DEL FRONT ESTOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO ----------------------------------------------------------------------------------
-
-
 let txt = ""; // Variable para almacenar el contenido del archivo
 let formattedStr = "";
 const fileInput = document.getElementById("fileInput");
@@ -784,9 +848,82 @@ fileInput.addEventListener("change", function () {
           .join(" ,")} }\n`;
       });
       document.getElementById("formattedFirstSets").textContent =
-        formattedFirstSetsText;
+      formattedFirstSetsText;
+
+      //SIGUIENTESSSSSSSSSSSSSSSSSSSSSSSSSS
+
+      console.log("Siguientes");
+      const newGrammar = splitProduction(n2);
+      const follow = new Follow(newGrammar, first);
+      const followsa = convertFollowToObject(follow);
+      
+      // Mostrar el conjunto de "Follow" en la página
+      let formattedFollowSetsText = "";
+      for (const [nonTerminal, followSet] of Object.entries(followsa)) {
+        formattedFollowSetsText += `Siguiente(${nonTerminal}) = { ${Array.from(followSet).join(", ")} }\n`;
+      }      
+      document.getElementById("formattedFollowSets").textContent = formattedFollowSetsText;
+
+      //TABLA MMMMMMMMMMMM
+      // Obtener terminales y no terminales
+      // Agregar explícitamente el símbolo $ a la lista de terminales si no está presente
+      if (!terminales2.includes('$')) {
+        terminales2.push('$');
+      }
+
+      // Inicializar la tabla M con los no terminales y terminales
+      initializeTableM(noterminales2, terminales2);
+      buildTableM(splitProvarious(n2), convertSetsToArrays(first), convertFollowToObject(follow));
+
+      // Obtener la referencia de la tabla HTML
+      const tableMElement = document.getElementById("tableM");
+      const tableBody = tableMElement.querySelector("tbody");
+
+      // Crear encabezados de columna (terminales), incluyendo $
+      let headerRow = "<th>N / T</th>";
+      terminales2.forEach(terminal => {
+        headerRow += `<th>${terminal}</th>`;
+      });
+      tableMElement.querySelector("thead").innerHTML =`<tr>${headerRow}</tr>`;
+
+      // Llenar la tabla con las filas (no terminales)
+      noterminales2.forEach(nonTerminal => {
+        let row = `<tr><td>${nonTerminal}</td>`; // Primera columna con el no terminal
+        terminales2.forEach(terminal => {
+          // Obtener la producción para cada no terminal y terminal
+          const production = tableM[nonTerminal] && tableM[nonTerminal][terminal] ? tableM[nonTerminal][terminal] : "";
+          row +=  `<td>${production}</td>`;
+        });
+        row += `</tr>`;
+        tableBody.innerHTML += row; // Agregar la fila a la tabla
+      });
+
+
+      //PA EL ALGORITMO
+      // Evento para el botón de "submit"
+      document.getElementById("submitButton").addEventListener("click", function () {
+        const input = document.getElementById("cadena").value;
+      
+        if (!input) {
+          alert("Por favor ingrese una cadena.");
+          return;
+        }
+      
+        const result = parse(input, tableM);
+      
+        const resultContainer = document.getElementById("resultContainer");
+        resultContainer.innerHTML = "";
+        const resultText = document.createElement("p");
+        resultText.textContent = result;
+        resultText.style.fontWeight = "bold";
+        resultText.style.fontSize = "26px";
+        resultText.style.color = result.includes("aceptada") ? "green" : "red";
+        resultContainer.appendChild(resultText);
+      });
+      
+
+    
     };
     reader.readAsText(file);
   }
 });
-*/

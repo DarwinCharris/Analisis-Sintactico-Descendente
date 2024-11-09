@@ -21,33 +21,70 @@
         <button id="customButton"><img src="icon.svg" alt=""></button>
       </div>
 
-      <div class="container-cadena hidden">
-        <input type="text" id="cadena" placeholder="Reconocer cadena">
-        <button id="submitButton"><img src="check.svg" alt=""></button>
-        <button id="resetButton"><img src="reload.svg" alt=""></button>
-      </div>
     </div>
     <div class="container-input">
       <h2>GIC seleccionada</h2>
       <pre id="fileContent"> </pre>
     </div>
     <div class="string">
+
       <div class="container-output">
         <h2>GIC sin recursividad y factorizada a la izquierda</h2>
         <pre id="formattedProductions"></pre>
       </div>
-      <div class="container-output">
-        <h2>Terminales</h2>
-        <pre id="terminales"></pre>
+
+      <div class="gramatica">
+        <div class="container-output" id="T">
+          <h2 >Terminales</h2>
+          <pre id="terminales"></pre>
+        </div>
+        <div class="container-output" id="N">
+          <h2>No Terminales</h2>
+          <pre id="noterminales"></pre>
+        </div>
       </div>
-      <div class="container-output">
-        <h2>No Terminales</h2>
-        <pre id="noterminales"></pre>
+
+      <div class="algoritmos">
+        <div class="container-output" id="P">
+          <h2>Conjunto de primeros</h2>
+          <pre id="formattedFirstSets"></pre>
+        </div>
+        <div class="container-output" id="S">
+          <h2>Conjunto de Siguientes</h2>
+          <pre id="formattedFollowSets"></pre>
+        </div>
       </div>
+
+    </div>
+    <div class="string">
       <div class="container-output">
-        <h2>Conjunto de primeros</h2>
-        <pre id="formattedFirstSets"></pre>
+        <h2>Tabla M</h2>
+        <table id="tableM">
+          <thead> 
+            <tr>
+              <th>N / T</th>
+            </tr>
+          </thead>
+          <tbody>
+          </tbody>
+        </table>
+
       </div>
+    </div>
+
+    <div class="string">
+      <h2>Reconocer Cadena</h2>
+      <div class="container-cadena hidden">
+        <input type="text" id="cadena" placeholder="Reconocer cadena">
+        <button id="submitButton"><img src="check.svg" alt=""></button>
+        <button id="resetButton"><img src="reload.svg" alt=""></button>
+      </div>
+      <h2>Paso a Paso</h2>
+      <div id="stepsContainer" class="steps-container"></div>
+
+      <h2>Resultado</h2>
+      <div id="resultContainer" class="result-container"></div>
+
     </div>
   </div>
   <script src="./Functions/functions.js"></script>
