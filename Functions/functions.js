@@ -314,95 +314,83 @@ function calculateFirst(gram, noTerminales) {
   return first;
 }
 
-function caso2(betha, b, prim, sig, terminales) {
-  if (terminales.includes(betha)) {
-    sig[b].add(betha);
-  } else {
-    prim[betha].forEach((val) => sig[b].add(val));
+function caso2(betha, b, prim, sig, terminales){
+  if(terminales.includes(betha)){
+    sig[b].add(betha)
+  }else{
+    prim[betha].forEach(val => sig[b].add(val))
   }
-  return sig;
+  return sig
 }
-function caso3i(a, b, pendiente) {
-  pendiente[b].add(a);
-  return pendiente;
+function caso3i(a, b, pendiente){
+  pendiente[b].add(a)
+  return pendiente
 }
-function caso3ii(a, b, betha, pendiente, prim, terminales) {
-  if (!terminales.includes(betha)) {
-    if (betha === "&") {
-      pendiente[b].add(a);
-    } else if (prim[betha].has("&")) {
-      pendiente[b].add(a);
+function caso3ii(a,b, betha, pendiente, prim, terminales){
+  if(!terminales.includes(betha)){
+    if(betha ==='&'){
+      pendiente[b].add(a)
+    }
+    else if(prim[betha].has('&')){
+      pendiente[b].add(a)
     }
   }
-  return pendiente;
+  return pendiente
 }
 
-function Follow(gram, noterminales, terminales, primero) {
-  let sig = {};
-  let pendiente = {};
-  for (let elem of gram.rightPart) {
+function Follow(gram, noterminales, terminales, primero){
+  let sig={}
+  let pendiente={}
+  for(let elem of gram.rightPart){
     sig[elem.NTerm] = new Set();
-    pendiente[elem.NTerm] = new Set();
+    pendiente[elem.NTerm]= new Set();
   }
-  sig[noterminales[0]].add("$");
-  for (let elem of gram.rightPart) {
-    for (let prod of elem.productions) {
-      let rev = customSplit(prod);
-      if (rev.length === 1) {
-        if (noterminales.includes(rev[0])) {
+  sig[noterminales[0]].add('$')
+  for(let elem of gram.rightPart){
+    for(let prod of elem.productions){
+      let rev = customSplit(prod)
+      if (rev.length ===1){
+        if(noterminales.includes(rev[0])){
           //Si solo tiene un elemento no terminal solo aplica el caso 3i
-          pendiente = caso3i(elem.NTerm, rev[0], pendiente);
+          pendiente = caso3i(elem.NTerm, rev[0], pendiente)
         }
-      } else if (rev.length === 2) {
-        if (noterminales.includes(rev[0])) {
-          sig = caso2(rev[1], rev[0], primero, sig, terminales);
-          pendiente = caso3ii(
-            elem.NTerm,
-            rev[0],
-            rev[1],
-            pendiente,
-            primero,
-            terminales
-          );
+      } else if (rev.length === 2){
+        if(noterminales.includes(rev[0])){
+          sig = caso2(rev[1], rev[0], primero,sig,terminales)
+          pendiente = caso3ii(elem.NTerm,rev[0], rev[1], pendiente,primero,terminales)
         }
-        if (noterminales.includes(rev[1])) {
-          pendiente = caso3i(elem.NTerm, rev[1], pendiente);
+        if(noterminales.includes(rev[1])){
+          pendiente = caso3i(elem.NTerm, rev[1],pendiente)
         }
-      } else {
+
+      } else{
         //Caso 2 cuando alpha sea &
-        if (noterminales.includes(rev[0])) {
-          sig = caso2(rev[1], rev[0], primero, sig, terminales);
-        } else {
-          let cond = true;
-          let i = 0;
-          let j = 1;
-          let k = 2;
-          while (cond) {
-            let alpha = rev[i];
-            let b = rev[j];
-            let betha = rev[k];
-            if (noterminales.includes(b)) {
-              sig = caso2(betha, b, primero, sig, terminales);
-              pendiente = caso3ii(
-                elem.NTerm,
-                b,
-                betha,
-                pendiente,
-                primero,
-                terminales
-              );
+        if(noterminales.includes(rev[0])){
+          sig = caso2(rev[1],rev[0],primero,sig,terminales)
+        }else{
+          let cond = true
+          let i = 0
+          let j = 1
+          let k = 2
+          while (cond){
+            let alpha = rev[i]
+            let b = rev[j]
+            let betha = rev[k]
+            if(noterminales.includes(b)){
+              sig = caso2(betha, b, primero, sig, terminales)
+              pendiente = caso3ii(elem.NTerm, b, betha,pendiente,primero,terminales)
             }
             i++;
             j++;
             k++;
-            if (k > rev.length - 1) {
-              cond = false;
+            if(k>rev.length-1){
+              cond = false
             }
           }
         }
         //caso 3i solo es posible si el ultimo elemento es no terminales
-        if (noterminales.includes(rev[rev.length - 1])) {
-          pendiente = caso3i(elem.NTerm, rev[rev.length - 1], pendiente);
+        if(noterminales.includes(rev[rev.length-1])){
+          pendiente = caso3i(elem.NTerm, rev[rev.length-1], pendiente)
         }
       }
     }
@@ -412,18 +400,20 @@ function Follow(gram, noterminales, terminales, primero) {
     if (pendiente[key] instanceof Set && pendiente[key].size === 0) {
       for (let otherKey in pendiente) {
         if (otherKey !== key && pendiente[otherKey].has(key)) {
-          sig[key].forEach((val) => sig[otherKey].add(val));
+          sig[key].forEach(val => sig[otherKey].add(val));
           //Agregar el elemento que tenía pendiente
-          pendiente[otherKey].delete(key);
+          pendiente[otherKey].delete(key)
         }
       }
     }
+
   }
-  for (let key in sig) {
-    sig[key].delete("&");
+  for(let key in sig){
+    sig[key].delete('&')
   }
-  return sig;
+  return sig
 }
+
 
 function splitProduction(grammar) {
   let newProductions = {
@@ -848,7 +838,7 @@ fileInput.addEventListener("change", function () {
 
       //SIGUIENTESSSSSSSSSSSSSSSSSSSSSSSSSS
       const newGrammar = splitProduction(n2);
-      const follow = Follow(newGrammar, noterminales2, terminales2, first);
+      const follow = Follow(n2, noterminales2, terminales2, first);
       console.log("Siguientes");
       console.log(follow);
       const followsa = convertFollowToObject(follow);
