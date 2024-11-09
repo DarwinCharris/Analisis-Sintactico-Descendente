@@ -616,7 +616,6 @@ function parse(input, M) {
 }
 
 function parse(input, M) {
-  // Referencias a los elementos del DOM
   const stepsContainer = document.getElementById("stepsContainer");
   const resultContainer = document.getElementById("resultContainer");
 
@@ -627,19 +626,17 @@ function parse(input, M) {
   let stack = ["$", "S"];
   input += "$"; // Agregamos el símbolo de fin de cadena a la entrada
 
-  // Función para mostrar cada paso con estilos grandes
   function printStep(step) {
-    const stepElement = document.createElement("p");
-    stepElement.textContent = step;
-    stepElement.style.fontSize = "24px"; // Aumentar tamaño de letra
-    stepElement.style.marginBottom = "10px";
-    stepElement.style.whiteSpace = "pre"; // Mantener espacios en blanco
-    stepsContainer.appendChild(stepElement);
+    stepsContainer.innerHTML += `<pre class="step">${step}</pre>`;
   }
 
-  // Ciclo para el análisis de la cadena
   while (stack.length > 0) {
-    printStep(`${printstack(stack)}         ${input}`);
+    // Alinear la pila y la entrada
+    let stackString = printstack(stack);
+    let alignedStep = `${stackString.padEnd(20)} ${input.padEnd(20)}`;
+    
+    // Mostrar la alineación
+    printStep(alignedStep);
 
     let X = stack.pop();
     let a = input[0];
@@ -650,7 +647,6 @@ function parse(input, M) {
       }
     }
 
-    // Verificar si hemos alcanzado el fin de la cadena
     if (X === "$" && a === "$") {
       return "Cadena aceptada.";
     }
@@ -659,12 +655,15 @@ function parse(input, M) {
       if (X === a) {
         input = input.slice(1);
       } else {
-        return "Cadena no aceptada: el símbolo no coincide.";
+        return "Error: el símbolo no coincide.";
       }
     } else {
       const production = M[X][a];
+      printStep(""); // Vacío entre pasos
+      printStep(`Producción: ${production}`);
+      printStep(""); // Vacío entre pasos
+
       if (production !== null) {
-        printStep(`Producción: ${production}`);
         const [left, right] = production.split("->");
         if (right !== "&") {
           for (let i = right.length - 1; i >= 0; i--) {
@@ -677,13 +676,19 @@ function parse(input, M) {
           }
         }
       } else {
-        return "Cadena no aceptada: no hay producción en la tabla para este par.";
+        return "Error: no hay producción en la tabla para este par.";
       }
     }
   }
 
   return "Cadena no aceptada.";
 }
+
+
+
+
+
+
 
 
 
@@ -901,25 +906,45 @@ fileInput.addEventListener("change", function () {
 
       //PA EL ALGORITMO
       // Evento para el botón de "submit"
-      document.getElementById("submitButton").addEventListener("click", function () {
+      document.getElementById("submitButton").addEventListener("click", function() {
         const input = document.getElementById("cadena").value;
-      
+    
         if (!input) {
-          alert("Por favor ingrese una cadena.");
-          return;
+            alert("Por favor ingrese una cadena.");
+            return;
         }
-      
+    
+        // Llamar a la función parse con el valor de la entrada
         const result = parse(input, tableM);
-      
+    
+        // Limpiar y mostrar el resultado
         const resultContainer = document.getElementById("resultContainer");
-        resultContainer.innerHTML = "";
+        resultContainer.innerHTML = ""; // Limpiar el contenedor de resultados
         const resultText = document.createElement("p");
         resultText.textContent = result;
         resultText.style.fontWeight = "bold";
-        resultText.style.fontSize = "26px";
         resultText.style.color = result.includes("aceptada") ? "green" : "red";
         resultContainer.appendChild(resultText);
-      });
+    });
+    
+    // Evento para el botón de "reset"
+    document.getElementById("resetButton").addEventListener("click", function() {
+        // Limpiar el campo de entrada
+        document.getElementById("cadena").value = "";
+    
+        // Limpiar los contenedores de pasos y resultados
+        document.getElementById("stepsContainer").innerHTML = "";
+        document.getElementById("resultContainer").innerHTML = "";
+    
+        // También puedes añadir estilos para resetear el formato visual si es necesario
+        // Ejemplo: Resetear colores, tamaños o clases
+        const stepsContainer = document.getElementById("stepsContainer");
+        const resultContainer = document.getElementById("resultContainer");
+    
+        stepsContainer.style = ""; // Restaurar estilo de contenedor de pasos
+        resultContainer.style = ""; // Restaurar estilo de contenedor de resultados
+    });
+    
       
 
     

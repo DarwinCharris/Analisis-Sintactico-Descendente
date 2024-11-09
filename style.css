@@ -237,18 +237,16 @@ table {
   }
 
 
-  .steps-container, .result-container {
+  .steps-container {
     max-width: 600px;
     margin: 20px auto;
     text-align: left;
-    background-color: #ffffff;
     border-radius: 10px;
     padding: 20px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   }
   
   .steps-container p {
-    font-size: 10px;
     line-height: 1.4;
     margin: 10px 0;
     padding: 7px;
@@ -258,14 +256,12 @@ table {
   .steps-container p:last-child {
     border-bottom: none;
   }
-  
-  .result-container {
-    font-size: 2px;
-    font-weight: bold;
-    color: #007bff;
-  }
 
-  
+  .result-container p {
+    font-size:15px; /* Reducido desde 26px */
+    font-weight: bold;
+    margin-top: 20px;
+  }
   .result-container.accepted {
     color: green;
   }
@@ -273,3 +269,59 @@ table {
   .result-container.rejected {
     color: red;
   }
+
+  #stepsContainer pre {
+    font-family: monospace; /* Esto asegura que los caracteres se alineen */
+    font-size: 20px; /* Aumentar el tamaño de la fuente */
+    line-height: 1.5; /* Mejorar la legibilidad */
+    margin: 10px 0; /* Espaciado entre pasos */
+    word-wrap: break-word; /* Permitir que las palabras largas se ajusten al final de la línea */
+  }
+  #stepsContainer .step {
+    font-family: monospace;
+    font-size: 20px;
+    line-height: 1.5;
+    margin: 10px 0;
+    display: flex;  /* Usamos flexbox para organizar los elementos en una fila */
+    justify-content: flex-start;  /* Alinear todo al principio */
+    align-items: center;  /* Centrar los elementos verticalmente */
+    word-wrap: break-word;
+  }
+  
+  #stepsContainer .stack,
+  #stepsContainer .input,
+  #stepsContainer .production {
+    margin-right: 20px;  /* Espaciado entre los elementos */
+  }
+  
+  #stepsContainer .stack {
+    font-weight: bold;
+  }
+  
+  #stepsContainer .production {
+    font-style: italic;
+    color: #555; /* Gris claro para las producciones */
+  }
+  
+  #stepsContainer {
+    background-color: #f5f5f5;
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  #resultContainer {
+    font-size: 24px;
+    font-weight: bold;
+    color: green; 
+    margin-top: 20px;
+  }
+  
+  #errorContainer {
+    font-size: 24px;
+    font-weight: bold;
+    color: red;
+    margin-top: 20px;
+  }
+  
