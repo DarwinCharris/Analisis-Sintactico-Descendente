@@ -278,7 +278,8 @@ function calculateFirst(gram, noTerminales) {
       }
     }
   }
-  for (let key in pendiente) {
+  while(!Object.values(pendiente).every(set => set.size === 0)){
+    for (let key in pendiente) {
     if (pendiente[key] instanceof Set && pendiente[key].size === 0) {
       for (let otherKey in pendiente) {
         if (otherKey !== key && pendiente[otherKey].has(key)) {
@@ -288,6 +289,8 @@ function calculateFirst(gram, noTerminales) {
       }
     }
   }
+  }
+  
   //Arreglar el caso 3
   for (let grm of gram.rightPart) {
     for (let prod of grm.productions) {
@@ -372,6 +375,9 @@ function Follow(gram, noterminales, terminales, primero){
           let i = 0
           let j = 1
           let k = 2
+          if(noterminales.includes(rev[j])&& terminales.includes(rev[k])){
+            sig[rev[j]].add(rev[k])
+          }
           while (cond){
             let alpha = rev[i]
             let b = rev[j]
@@ -396,6 +402,20 @@ function Follow(gram, noterminales, terminales, primero){
     }
   }
   //Administrar los pendientes
+  for (let key in pendiente){
+    for (let key2 in pendiente){
+      if((pendiente[key2].has(key) && pendiente[key].has(key2))&& key!=key2){
+        if(sig[key].size !== 0 ){
+          sig[key].forEach(val => sig[key2].add(val));
+          pendiente[key2].delete(key)
+        }else if(sig[key2].size !==0){
+          sig[key2].forEach(val => sig[key].add(val));
+          pendiente[key].delete(key2)
+        }
+      }
+    }
+  }  
+  while(!Object.values(pendiente).every(set => set.size === 0)){
   for (let key in pendiente) {
     if (pendiente[key] instanceof Set && pendiente[key].size === 0) {
       for (let otherKey in pendiente) {
@@ -406,8 +426,8 @@ function Follow(gram, noterminales, terminales, primero){
         }
       }
     }
-
   }
+}
   for(let key in sig){
     sig[key].delete('&')
   }
@@ -707,11 +727,14 @@ function formatFirstSetsAsLists(firstSets) {
 
 
 
+let string = 'E->A\r\nE->L\r\nA->n\r\nA->id\r\nL->(S)\r\nS->E,S\r\nS->E'
 
-
-
-
-
+let [terminales, noterminales, gramatica] = components(string)
+let nueva = leftRecursion(gramatica);
+let n2 = factorization(nueva);
+let [terminales2, noterminales2] = newcomponents(n2);
+let first = calculateFirst(n2, noterminales2);
+const follow = Follow(n2, noterminales2, terminales2, first);
 
 
 
