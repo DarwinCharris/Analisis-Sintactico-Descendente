@@ -417,6 +417,9 @@ function Follow(gram, noterminales, terminales, primero){
   }  
   while(!Object.values(pendiente).every(set => set.size === 0)){
   for (let key in pendiente) {
+    if(pendiente[key].has(key)){
+      pendiente[key].delete(key)
+    }
     if (pendiente[key] instanceof Set && pendiente[key].size === 0) {
       for (let otherKey in pendiente) {
         if (otherKey !== key && pendiente[otherKey].has(key)) {
@@ -727,7 +730,7 @@ function formatFirstSetsAsLists(firstSets) {
 
 
 
-let string = 'E->A\r\nE->L\r\nA->n\r\nA->id\r\nL->(S)\r\nS->E,S\r\nS->E'
+let string = 'S->S,T\r\nS->T\r\nT->id\r\nT->id(S)'
 
 let [terminales, noterminales, gramatica] = components(string)
 let nueva = leftRecursion(gramatica);
