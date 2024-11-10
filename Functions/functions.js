@@ -280,6 +280,9 @@ function calculateFirst(gram, noTerminales) {
   }
   while(!Object.values(pendiente).every(set => set.size === 0)){
     for (let key in pendiente) {
+      if(pendiente[key].has(key)){
+        pendiente[key].delete(key)
+      }
     if (pendiente[key] instanceof Set && pendiente[key].size === 0) {
       for (let otherKey in pendiente) {
         if (otherKey !== key && pendiente[otherKey].has(key)) {
