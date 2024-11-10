@@ -278,11 +278,14 @@ function calculateFirst(gram, noTerminales) {
       }
     }
   }
+  for(let key in pendiente){
+    if(pendiente[key].has(key)){
+      pendiente[key].delete(key)
+    }
+  }
   while(!Object.values(pendiente).every(set => set.size === 0)){
     for (let key in pendiente) {
-      if(pendiente[key].has(key)){
-        pendiente[key].delete(key)
-      }
+      
     if (pendiente[key] instanceof Set && pendiente[key].size === 0) {
       for (let otherKey in pendiente) {
         if (otherKey !== key && pendiente[otherKey].has(key)) {
@@ -405,6 +408,11 @@ function Follow(gram, noterminales, terminales, primero){
     }
   }
   //Administrar los pendientes
+  for(let key in pendiente){
+    if(pendiente[key].has(key)){
+      pendiente[key].delete(key)
+    }
+  }
   for (let key in pendiente){
     for (let key2 in pendiente){
       if((pendiente[key2].has(key) && pendiente[key].has(key2))&& key!=key2){
@@ -420,9 +428,6 @@ function Follow(gram, noterminales, terminales, primero){
   }  
   while(!Object.values(pendiente).every(set => set.size === 0)){
   for (let key in pendiente) {
-    if(pendiente[key].has(key)){
-      pendiente[key].delete(key)
-    }
     if (pendiente[key] instanceof Set && pendiente[key].size === 0) {
       for (let otherKey in pendiente) {
         if (otherKey !== key && pendiente[otherKey].has(key)) {
