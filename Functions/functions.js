@@ -667,11 +667,12 @@ function parse(input, M) {
   }
 }
 
-function parse(input, M, sinic) {
+function parse(input, M, sinic, formateado) {
   console.log("Tabla M:");
   console.log(M);
   const stepsContainer = document.getElementById("stepsContainer");
   const resultContainer = document.getElementById("resultContainer");
+  iter = 0;
 
   // Limpiar los contenedores antes de empezar
   stepsContainer.innerHTML = "";
@@ -685,8 +686,10 @@ function parse(input, M, sinic) {
   }
 
   while (stack.length > 0) {
-    // Alinear la pila y la entrada
+    iter++;
+    production = "";
     let stackString = printstack(stack);
+    formateado.push([iter, stackString, input, production]);
     let alignedStep = `${stackString.padEnd(20)} ${input.padEnd(20)}`;
 
     // Mostrar la alineación
@@ -712,7 +715,7 @@ function parse(input, M, sinic) {
         return "Cadena no aceptada";
       }
     } else {
-      const production = M[X][a];
+      production = M[X][a];
       printStep(""); // Vacío entre pasos
       if (production != null) {
         printStep(`Producción: ${production}`);
@@ -941,9 +944,11 @@ fileInput.addEventListener("change", function () {
             alert("Por favor ingrese una cadena.");
             return;
           }
-
+          formateado = [];
           // Llamar a la función parse con el valor de la entrada
-          const result = parse(input, tableM, noterminales2[0]);
+          const result = parse(input, tableM, noterminales2[0], formateado);
+          console.log("Hola");
+          console.log(formateado);
 
           // Limpiar y mostrar el resultado
           const resultContainer = document.getElementById("resultContainer");
