@@ -613,88 +613,44 @@ function printstack(stack) {
   return str;
 }
 
-function parse(input, M) {
-  console.log("Tabla M:asd");
-  console.log(M);
-  let stack = ["$", "S"];
-  input += "$"; // Agregamos el símbolo de fin de cadena a la entrada
-  while (stack.length > 0) {
-    console.log(`${printstack(stack)}         ${input}`);
-    let X = stack.pop(); // Obtenemos el símbolo en la cima de la pila
-    let a = input[0]; // Obtenemos el símbolo actual de la entrada
-
-    if (X === "'") {
-      if (stack.length >= 2) {
-        X = stack.pop() + X;
-      }
-    }
-
-    if (X === "$" && a === "$") {
-      console.log("Cadena aceptada.");
-      return true;
-    }
-
-    if (isTerminal(X) || X === "$") {
-      if (X === a) {
-        input = input.slice(1); // Avanzamos en la cadena de entrada
-      } else {
-        console.error("Cadena no aceptada");
-        return;
-      }
-    } else {
-      // X es un no terminal
-      const production = M[X][a];
-      console.log("");
-      console.log(production);
-      console.log("");
-      if (production != null) {
-        const [left, right] = production.split("->");
-        if (right !== "&") {
-          for (let i = right.length - 1; i >= 0; i--) {
-            if (right[i] === "'") {
-              stack.push(right[i - 1] + right[i]);
-              i--;
-            } else {
-              stack.push(right[i]);
-            }
-          }
-        }
-      } else {
-        console.error("Cadena no aceptada");
-        return;
-      }
-    }
-  }
-}
-
 function parse(input, M, sinic, formateado) {
-  console.log("Tabla M:");
-  console.log(M);
   const stepsContainer = document.getElementById("stepsContainer");
   const resultContainer = document.getElementById("resultContainer");
-  iter = 0;
 
   // Limpiar los contenedores antes de empezar
   stepsContainer.innerHTML = "";
   resultContainer.innerHTML = "";
 
+  // Crear la tabla y el encabezado
+  const table = document.createElement("table");
+  table.classList.add("steps-table");
+
+  const thead = document.createElement("thead");
+  const headerRow = document.createElement("tr");
+
+  ["Stack", "Input", "Production"].forEach((headerText) => {
+    const th = document.createElement("th");
+    th.textContent = headerText;
+    headerRow.appendChild(th);
+  });
+  thead.appendChild(headerRow);
+  table.appendChild(thead);
+  stepsContainer.appendChild(table);
+
+  let iter = 0;
   let stack = ["$", sinic];
-  input += "$"; // Agregamos el símbolo de fin de cadena a la entrada
+  input += "$";
+  let production = "";
+  let sw = false;
 
-  function printStep(step) {
-    stepsContainer.innerHTML += `<pre class="step">${step}</pre>`;
-  }
-
+  // Lógica de iteración de la función parse
   while (stack.length > 0) {
-    iter++;
-    production = "";
+    if (sw) {
+      input = input.slice(1);
+      sw = false;
+    }
+
     let stackString = printstack(stack);
-    formateado.push([iter, stackString, input, production]);
-    let alignedStep = `${stackString.padEnd(20)} ${input.padEnd(20)}`;
-
-    // Mostrar la alineación
-    printStep(alignedStep);
-
     let X = stack.pop();
     let a = input[0];
 
@@ -705,24 +661,21 @@ function parse(input, M, sinic, formateado) {
     }
 
     if (X === "$" && a === "$") {
+      production = "";
+      addRowToTable(table, stackString, input, production); // Agregar fila de datos
       return "Cadena aceptada";
     }
 
     if (isTerminal(X) || X === "$") {
       if (X === a) {
-        input = input.slice(1);
+        sw = true;
+        production = "";
       } else {
         return "Cadena no aceptada";
       }
     } else {
-      production = M[X][a];
-      printStep(""); // Vacío entre pasos
-      if (production != null) {
-        printStep(`Producción: ${production}`);
-      }
-      printStep(""); // Vacío entre pasos
-
-      if (production != null) {
+      production = M[X] && M[X][a];
+      if (production) {
         const [left, right] = production.split("->");
         if (right !== "&") {
           for (let i = right.length - 1; i >= 0; i--) {
@@ -738,9 +691,25 @@ function parse(input, M, sinic, formateado) {
         return "Cadena no aceptada";
       }
     }
+
+    addRowToTable(table, stackString, input, production); // Agregar fila de datos
+    iter++;
   }
 
   return "Cadena no aceptada";
+}
+
+// Función auxiliar para añadir filas a la tabla
+function addRowToTable(table, stack, input, production) {
+  const row = document.createElement("tr");
+
+  [stack, input, production].forEach((text) => {
+    const td = document.createElement("td");
+    td.textContent = text;
+    row.appendChild(td);
+  });
+
+  table.appendChild(row);
 }
 
 // Función para verificar si un símbolo es terminal
@@ -775,6 +744,15 @@ let n2 = factorization(nueva);
 let [terminales2, noterminales2] = newcomponents(n2);
 let first = calculateFirst(n2, noterminales2);
 const follow = Follow(n2, noterminales2, terminales2, first);
+
+
+
+
+
+
+
+
+
 
 // F R O N T   E N  D  ----------------------------------------------------------------------------------
 let txt = ""; // Variable para almacenar el contenido del archivo
@@ -933,8 +911,7 @@ fileInput.addEventListener("change", function () {
         tableBody.innerHTML += row; // Agregar la fila a la tabla
       });
 
-      //PA EL ALGORITMO
-      // Evento para el botón de "submit"
+      //PARA EL ALGORITMO
       document
         .getElementById("submitButton")
         .addEventListener("click", function () {
@@ -944,15 +921,67 @@ fileInput.addEventListener("change", function () {
             alert("Por favor ingrese una cadena.");
             return;
           }
+
+          // Inicializar formateado y limpiar contenedores
           formateado = [];
+          const stepsContainer = document.getElementById("stepsContainer");
+          stepsContainer.innerHTML = "";
+
+          const resultContainer = document.getElementById("resultContainer");
+          resultContainer.innerHTML = "";
+
+          // Crear la tabla una vez y agregar el encabezado
+          const table = document.createElement("table");
+          table.classList.add("steps-table"); // Clase específica para esta tabla
+
+          const thead = document.createElement("thead");
+          const headerRow = document.createElement("tr");
+
+          ["Stack", "Input", "Production"].forEach((headerText) => {
+            const th = document.createElement("th");
+            th.textContent = headerText;
+            headerRow.appendChild(th);
+          });
+
+          thead.appendChild(headerRow);
+          table.appendChild(thead);
+
+          const tbody = document.createElement("tbody");
+          table.appendChild(tbody);
+
+          // Añadir la tabla al contenedor de pasos
+          stepsContainer.appendChild(table);
+
           // Llamar a la función parse con el valor de la entrada
           const result = parse(input, tableM, noterminales2[0], formateado);
-          console.log("Hola");
           console.log(formateado);
 
-          // Limpiar y mostrar el resultado
-          const resultContainer = document.getElementById("resultContainer");
-          resultContainer.innerHTML = ""; // Limpiar el contenedor de resultados
+          // Mostrar cada paso de formateado en la tabla
+          formateado.forEach(([stackString, input, production]) => {
+            const row = document.createElement("tr");
+
+            const stackCell = document.createElement("td");
+            stackCell.classList.add("stack"); // Clase para la celda de la pila
+            stackCell.textContent = stackString;
+
+            const inputCell = document.createElement("td");
+            inputCell.classList.add("input"); // Clase para la celda de la entrada
+            inputCell.textContent = input;
+
+            const productionCell = document.createElement("td");
+            productionCell.classList.add("production"); // Clase para la celda de la producción
+            productionCell.textContent = production;
+
+            // Añadir las celdas a la fila
+            row.appendChild(stackCell);
+            row.appendChild(inputCell);
+            row.appendChild(productionCell);
+
+            // Añadir la fila al cuerpo de la tabla
+            tbody.appendChild(row);
+          });
+
+          // Mostrar el resultado final en resultContainer
           const resultText = document.createElement("p");
           resultText.textContent = result;
           resultText.style.fontWeight = "bold";
@@ -971,8 +1000,7 @@ fileInput.addEventListener("change", function () {
           document.getElementById("stepsContainer").innerHTML = "";
           document.getElementById("resultContainer").innerHTML = "";
 
-          // También puedes añadir estilos para resetear el formato visual si es necesario
-          // Ejemplo: Resetear colores, tamaños o clases
+          // Restaurar estilos de los contenedores (opcional)
           const stepsContainer = document.getElementById("stepsContainer");
           const resultContainer = document.getElementById("resultContainer");
 
