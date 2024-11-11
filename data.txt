@@ -1,4 +1,7 @@
-S->S,T
-S->T
-T->id
-T->id(S)
+S->Ab
+S->B
+A->Aa
+A->c
+A->d
+B->a
+B->aB
