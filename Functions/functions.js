@@ -439,6 +439,19 @@ function Follow(gram, noterminales, terminales, primero) {
   }
   while (!Object.values(pendiente).every((set) => set.size === 0)) {
     for (let key in pendiente) {
+      for (let key2 in pendiente) {
+        if (pendiente[key2].has(key) && pendiente[key].has(key2) && key != key2) {
+          if (sig[key].size !== 0) {
+            sig[key].forEach((val) => sig[key2].add(val));
+            pendiente[key2].delete(key);
+          } else if (sig[key2].size !== 0) {
+            sig[key2].forEach((val) => sig[key].add(val));
+            pendiente[key].delete(key2);
+          }
+        }
+      }
+    }
+    for (let key in pendiente) {
       if (pendiente[key] instanceof Set && pendiente[key].size === 0) {
         for (let otherKey in pendiente) {
           if (otherKey !== key && pendiente[otherKey].has(key)) {
@@ -739,7 +752,7 @@ function formatFirstSetsAsLists(firstSets) {
   return result;
 }
 
-let string = "S->S,T\r\nS->T\r\nT->id\r\nT->id(S)";
+let string = "S->Ab\r\nS->B\r\nA->Aa\r\nA->c\r\nA->d\r\nB->a\r\nB->aB";
 
 let [terminales, noterminales, gramatica] = components(string);
 let nueva = leftRecursion(gramatica);
