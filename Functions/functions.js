@@ -674,8 +674,11 @@ function parse(input, M, sinic, formateado) {
         return "Cadena no aceptada";
       }
     } else {
-      production = M[X] && M[X][a];
-      if (production) {
+      if (production != null && production != undefined) {
+        production = M[X][a];
+      }
+      
+      if (production != null && production != undefined) {
         const [left, right] = production.split("->");
         if (right !== "&") {
           for (let i = right.length - 1; i >= 0; i--) {
