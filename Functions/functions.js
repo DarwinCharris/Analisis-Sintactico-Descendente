@@ -278,25 +278,24 @@ function calculateFirst(gram, noTerminales) {
       }
     }
   }
-  for(let key in pendiente){
-    if(pendiente[key].has(key)){
-      pendiente[key].delete(key)
+  for (let key in pendiente) {
+    if (pendiente[key].has(key)) {
+      pendiente[key].delete(key);
     }
   }
-  while(!Object.values(pendiente).every(set => set.size === 0)){
+  while (!Object.values(pendiente).every((set) => set.size === 0)) {
     for (let key in pendiente) {
-      
-    if (pendiente[key] instanceof Set && pendiente[key].size === 0) {
-      for (let otherKey in pendiente) {
-        if (otherKey !== key && pendiente[otherKey].has(key)) {
-          first[key].forEach((val) => first[otherKey].add(val));
-          pendiente[otherKey].delete(key);
+      if (pendiente[key] instanceof Set && pendiente[key].size === 0) {
+        for (let otherKey in pendiente) {
+          if (otherKey !== key && pendiente[otherKey].has(key)) {
+            first[key].forEach((val) => first[otherKey].add(val));
+            pendiente[otherKey].delete(key);
+          }
         }
       }
     }
   }
-  }
-  
+
   //Arreglar el caso 3
   for (let grm of gram.rightPart) {
     for (let prod of grm.productions) {
@@ -323,128 +322,139 @@ function calculateFirst(gram, noTerminales) {
   return first;
 }
 
-function caso2(betha, b, prim, sig, terminales){
-  if(terminales.includes(betha)){
-    sig[b].add(betha)
-  }else{
-    prim[betha].forEach(val => sig[b].add(val))
+function caso2(betha, b, prim, sig, terminales) {
+  if (terminales.includes(betha)) {
+    sig[b].add(betha);
+  } else {
+    prim[betha].forEach((val) => sig[b].add(val));
   }
-  return sig
+  return sig;
 }
-function caso3i(a, b, pendiente){
-  pendiente[b].add(a)
-  return pendiente
+function caso3i(a, b, pendiente) {
+  pendiente[b].add(a);
+  return pendiente;
 }
-function caso3ii(a,b, betha, pendiente, prim, terminales){
-  if(!terminales.includes(betha)){
-    if(betha ==='&'){
-      pendiente[b].add(a)
-    }
-    else if(prim[betha].has('&')){
-      pendiente[b].add(a)
+function caso3ii(a, b, betha, pendiente, prim, terminales) {
+  if (!terminales.includes(betha)) {
+    if (betha === "&") {
+      pendiente[b].add(a);
+    } else if (prim[betha].has("&")) {
+      pendiente[b].add(a);
     }
   }
-  return pendiente
+  return pendiente;
 }
 
-function Follow(gram, noterminales, terminales, primero){
-  let sig={}
-  let pendiente={}
-  for(let elem of gram.rightPart){
+function Follow(gram, noterminales, terminales, primero) {
+  let sig = {};
+  let pendiente = {};
+  for (let elem of gram.rightPart) {
     sig[elem.NTerm] = new Set();
-    pendiente[elem.NTerm]= new Set();
+    pendiente[elem.NTerm] = new Set();
   }
-  sig[noterminales[0]].add('$')
-  for(let elem of gram.rightPart){
-    for(let prod of elem.productions){
-      let rev = customSplit(prod)
-      if (rev.length ===1){
-        if(noterminales.includes(rev[0])){
+  sig[noterminales[0]].add("$");
+  for (let elem of gram.rightPart) {
+    for (let prod of elem.productions) {
+      let rev = customSplit(prod);
+      if (rev.length === 1) {
+        if (noterminales.includes(rev[0])) {
           //Si solo tiene un elemento no terminal solo aplica el caso 3i
-          pendiente = caso3i(elem.NTerm, rev[0], pendiente)
+          pendiente = caso3i(elem.NTerm, rev[0], pendiente);
         }
-      } else if (rev.length === 2){
-        if(noterminales.includes(rev[0])){
-          sig = caso2(rev[1], rev[0], primero,sig,terminales)
-          pendiente = caso3ii(elem.NTerm,rev[0], rev[1], pendiente,primero,terminales)
+      } else if (rev.length === 2) {
+        if (noterminales.includes(rev[0])) {
+          sig = caso2(rev[1], rev[0], primero, sig, terminales);
+          pendiente = caso3ii(
+            elem.NTerm,
+            rev[0],
+            rev[1],
+            pendiente,
+            primero,
+            terminales
+          );
         }
-        if(noterminales.includes(rev[1])){
-          pendiente = caso3i(elem.NTerm, rev[1],pendiente)
+        if (noterminales.includes(rev[1])) {
+          pendiente = caso3i(elem.NTerm, rev[1], pendiente);
         }
-
-      } else{
+      } else {
         //Caso 2 cuando alpha sea &
-        if(noterminales.includes(rev[0])){
-          sig = caso2(rev[1],rev[0],primero,sig,terminales)
-        }else{
-          let cond = true
-          let i = 0
-          let j = 1
-          let k = 2
-          if(noterminales.includes(rev[j])&& terminales.includes(rev[k])){
-            sig[rev[j]].add(rev[k])
+        if (noterminales.includes(rev[0])) {
+          sig = caso2(rev[1], rev[0], primero, sig, terminales);
+        } else {
+          let cond = true;
+          let i = 0;
+          let j = 1;
+          let k = 2;
+          if (noterminales.includes(rev[j]) && terminales.includes(rev[k])) {
+            sig[rev[j]].add(rev[k]);
           }
-          while (cond){
-            let alpha = rev[i]
-            let b = rev[j]
-            let betha = rev[k]
-            if(noterminales.includes(b)){
-              sig = caso2(betha, b, primero, sig, terminales)
-              pendiente = caso3ii(elem.NTerm, b, betha,pendiente,primero,terminales)
+          while (cond) {
+            let alpha = rev[i];
+            let b = rev[j];
+            let betha = rev[k];
+            if (noterminales.includes(b)) {
+              sig = caso2(betha, b, primero, sig, terminales);
+              pendiente = caso3ii(
+                elem.NTerm,
+                b,
+                betha,
+                pendiente,
+                primero,
+                terminales
+              );
             }
             i++;
             j++;
             k++;
-            if(k>rev.length-1){
-              cond = false
+            if (k > rev.length - 1) {
+              cond = false;
             }
           }
         }
         //caso 3i solo es posible si el ultimo elemento es no terminales
-        if(noterminales.includes(rev[rev.length-1])){
-          pendiente = caso3i(elem.NTerm, rev[rev.length-1], pendiente)
+        if (noterminales.includes(rev[rev.length - 1])) {
+          pendiente = caso3i(elem.NTerm, rev[rev.length - 1], pendiente);
         }
       }
     }
   }
   //Administrar los pendientes
-  for(let key in pendiente){
-    if(pendiente[key].has(key)){
-      pendiente[key].delete(key)
-    }
-  }
-  for (let key in pendiente){
-    for (let key2 in pendiente){
-      if((pendiente[key2].has(key) && pendiente[key].has(key2))&& key!=key2){
-        if(sig[key].size !== 0 ){
-          sig[key].forEach(val => sig[key2].add(val));
-          pendiente[key2].delete(key)
-        }else if(sig[key2].size !==0){
-          sig[key2].forEach(val => sig[key].add(val));
-          pendiente[key].delete(key2)
-        }
-      }
-    }
-  }  
-  while(!Object.values(pendiente).every(set => set.size === 0)){
   for (let key in pendiente) {
-    if (pendiente[key] instanceof Set && pendiente[key].size === 0) {
-      for (let otherKey in pendiente) {
-        if (otherKey !== key && pendiente[otherKey].has(key)) {
-          sig[key].forEach(val => sig[otherKey].add(val));
-          //Agregar el elemento que tenía pendiente
-          pendiente[otherKey].delete(key)
+    if (pendiente[key].has(key)) {
+      pendiente[key].delete(key);
+    }
+  }
+  for (let key in pendiente) {
+    for (let key2 in pendiente) {
+      if (pendiente[key2].has(key) && pendiente[key].has(key2) && key != key2) {
+        if (sig[key].size !== 0) {
+          sig[key].forEach((val) => sig[key2].add(val));
+          pendiente[key2].delete(key);
+        } else if (sig[key2].size !== 0) {
+          sig[key2].forEach((val) => sig[key].add(val));
+          pendiente[key].delete(key2);
         }
       }
     }
   }
-}
-  for(let key in sig){
-    sig[key].delete('&')
+  while (!Object.values(pendiente).every((set) => set.size === 0)) {
+    for (let key in pendiente) {
+      if (pendiente[key] instanceof Set && pendiente[key].size === 0) {
+        for (let otherKey in pendiente) {
+          if (otherKey !== key && pendiente[otherKey].has(key)) {
+            sig[key].forEach((val) => sig[otherKey].add(val));
+            //Agregar el elemento que tenía pendiente
+            pendiente[otherKey].delete(key);
+          }
+        }
+      }
+    }
   }
-  return sig
+  for (let key in sig) {
+    sig[key].delete("&");
+  }
+  return sig;
 }
-
 
 function splitProduction(grammar) {
   let newProductions = {
@@ -535,6 +545,30 @@ function splitProvarious(grammar) {
   return newProductions;
 }
 
+function getFirst(productions, firsts) {
+  let result = [];
+  const firstSymbol = productions[0];
+  if (firsts[firstSymbol]) {
+    const firstSet = firsts[firstSymbol];
+    console.log(firstSet);
+    firstSet.forEach((symbol) => {
+      if (symbol !== "&") {
+        result.push(symbol);
+      } else {
+        if (productions.length > 1) {
+          result.push(symbol);
+          result = result.concat(getFirst(productions.slice(1), firsts));
+        } else {
+          result.push("&"); // Si la producción es completamente ε
+        }
+      }
+    });
+  } else if (firstSymbol !== "'") {
+    result.push(firstSymbol); // Agrega el terminal directamente
+  }
+  return [...new Set(result)];
+}
+
 let tableM = {}; //Tabla M
 
 function initializeTableM(nonTerminals, terminals) {
@@ -547,11 +581,15 @@ function initializeTableM(nonTerminals, terminals) {
   });
 }
 
-// Construye la tabla M
 function buildTableM(grammar, firsts, follows) {
+  console.log("Primero de alphaaa");
   grammar.rightPart.forEach(({ NTerm, productions }) => {
     // Obtén FIRST(α) para la producción A -> α
     const firstAlpha = getFirst(productions, firsts);
+    console.log(productions);
+    console.log(firstAlpha);
+    console.log("");
+    console.log("");
     firstAlpha.forEach((symbol) => {
       if (symbol !== "&") {
         tableM[NTerm][symbol] = `${NTerm}->${productions}`; // Añadir la producción
@@ -566,17 +604,6 @@ function buildTableM(grammar, firsts, follows) {
   });
 }
 
-// Función getFirst: Obtiene el conjunto FIRST de una cadena de producción
-function getFirst(productions, firsts) {
-  let result = [];
-  if (firsts[productions[0][0]]) {
-    result = result.concat(firsts[productions[0][0]]);
-  } else {
-    result = result.concat(productions[0][0]);
-  }
-  return [...new Set(result)];
-}
-
 // para reconcimiento
 function printstack(stack) {
   let str = "";
@@ -587,6 +614,8 @@ function printstack(stack) {
 }
 
 function parse(input, M) {
+  console.log("Tabla M:asd");
+  console.log(M);
   let stack = ["$", "S"];
   input += "$"; // Agregamos el símbolo de fin de cadena a la entrada
   while (stack.length > 0) {
@@ -618,7 +647,7 @@ function parse(input, M) {
       console.log("");
       console.log(production);
       console.log("");
-      if (production !== null && production !== undefined) {
+      if (production != null) {
         const [left, right] = production.split("->");
         if (right !== "&") {
           for (let i = right.length - 1; i >= 0; i--) {
@@ -638,7 +667,9 @@ function parse(input, M) {
   }
 }
 
-function parse(input, M) {
+function parse(input, M, sinic) {
+  console.log("Tabla M:");
+  console.log(M);
   const stepsContainer = document.getElementById("stepsContainer");
   const resultContainer = document.getElementById("resultContainer");
 
@@ -646,7 +677,7 @@ function parse(input, M) {
   stepsContainer.innerHTML = "";
   resultContainer.innerHTML = "";
 
-  let stack = ["$", "S"];
+  let stack = ["$", sinic];
   input += "$"; // Agregamos el símbolo de fin de cadena a la entrada
 
   function printStep(step) {
@@ -663,7 +694,6 @@ function parse(input, M) {
 
     let X = stack.pop();
     let a = input[0];
-    
 
     if (X === "'") {
       if (stack.length >= 2) {
@@ -684,12 +714,12 @@ function parse(input, M) {
     } else {
       const production = M[X][a];
       printStep(""); // Vacío entre pasos
-      if (production !== null){
+      if (production != null) {
         printStep(`Producción: ${production}`);
       }
       printStep(""); // Vacío entre pasos
 
-      if (production !== null) {
+      if (production != null) {
         const [left, right] = production.split("->");
         if (right !== "&") {
           for (let i = right.length - 1; i >= 0; i--) {
@@ -715,7 +745,6 @@ function isTerminal(symbol) {
   return !/[A-Z]/.test(symbol);
 }
 
-
 function formatProductionsAsLists(rightPart) {
   const formattedProductions = [];
   for (let production of rightPart) {
@@ -735,30 +764,14 @@ function formatFirstSetsAsLists(firstSets) {
   return result;
 }
 
+let string = "S->S,T\r\nS->T\r\nT->id\r\nT->id(S)";
 
-
-
-let string = 'S->S,T\r\nS->T\r\nT->id\r\nT->id(S)'
-
-let [terminales, noterminales, gramatica] = components(string)
+let [terminales, noterminales, gramatica] = components(string);
 let nueva = leftRecursion(gramatica);
 let n2 = factorization(nueva);
 let [terminales2, noterminales2] = newcomponents(n2);
 let first = calculateFirst(n2, noterminales2);
 const follow = Follow(n2, noterminales2, terminales2, first);
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // F R O N T   E N  D  ----------------------------------------------------------------------------------
 let txt = ""; // Variable para almacenar el contenido del archivo
@@ -930,7 +943,7 @@ fileInput.addEventListener("change", function () {
           }
 
           // Llamar a la función parse con el valor de la entrada
-          const result = parse(input, tableM);
+          const result = parse(input, tableM, noterminales2[0]);
 
           // Limpiar y mostrar el resultado
           const resultContainer = document.getElementById("resultContainer");
@@ -938,9 +951,7 @@ fileInput.addEventListener("change", function () {
           const resultText = document.createElement("p");
           resultText.textContent = result;
           resultText.style.fontWeight = "bold";
-          resultText.style.color = result.includes("no")
-            ? "red"
-            : "green";
+          resultText.style.color = result.includes("no") ? "red" : "green";
           resultContainer.appendChild(resultText);
         });
 
