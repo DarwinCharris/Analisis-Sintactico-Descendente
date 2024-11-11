@@ -719,6 +719,7 @@ function parse(input, M, sinic, formateado) {
       printStep(""); // Vacío entre pasos
       if (production != null) {
         printStep(`Producción: ${production}`);
+        formateado[iter - 1][3] = production;
       }
       printStep(""); // Vacío entre pasos
 
