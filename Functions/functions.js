@@ -626,7 +626,7 @@ function printstack(stack) {
   return str;
 }
 
-function parse(input, M, sinic, formateado) {
+function parse(input, M, sinic) {
   const stepsContainer = document.getElementById("stepsContainer");
   const resultContainer = document.getElementById("resultContainer");
 
@@ -656,7 +656,6 @@ function parse(input, M, sinic, formateado) {
   let production = "";
   let sw = false;
 
-  // Lógica de iteración de la función parse
   while (stack.length > 0) {
     if (sw) {
       input = input.slice(1);
@@ -675,7 +674,7 @@ function parse(input, M, sinic, formateado) {
 
     if (X === "$" && a === "$") {
       production = "";
-      addRowToTable(table, stackString, input, production); // Agregar fila de datos
+      addRowToTable(table, stackString, input, production); 
       return "Cadena aceptada";
     }
 
@@ -684,6 +683,7 @@ function parse(input, M, sinic, formateado) {
         sw = true;
         production = "";
       } else {
+        addRowToTable(table, stackString, input, production); 
         return "Cadena no aceptada";
       }
     } else {
@@ -704,14 +704,15 @@ function parse(input, M, sinic, formateado) {
           }
         }
       } else {
+        addRowToTable(table, stackString, input, production); 
         return "Cadena no aceptada";
       }
     }
 
-    addRowToTable(table, stackString, input, production); // Agregar fila de datos
+    addRowToTable(table, stackString, input, production); 
     iter++;
   }
-
+  addRowToTable(table, stackString, input, production); 
   return "Cadena no aceptada";
 }
 
@@ -969,8 +970,7 @@ fileInput.addEventListener("change", function () {
           stepsContainer.appendChild(table);
 
           // Llamar a la función parse con el valor de la entrada
-          const result = parse(input, tableM, noterminales2[0], formateado);
-          console.log(formateado);
+          const result = parse(input, tableM, noterminales2[0]);
 
           // Mostrar cada paso de formateado en la tabla
           formateado.forEach(([stackString, input, production]) => {
